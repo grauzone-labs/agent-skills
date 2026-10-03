@@ -1,0 +1,6 @@
+interface:
+  display_name: "Model routing"
+  short_description: "Route each deliverable to its assigned model"
+
+policy:
+  allow_implicit_invocation: true
