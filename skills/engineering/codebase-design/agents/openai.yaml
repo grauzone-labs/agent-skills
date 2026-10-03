@@ -1,0 +1,6 @@
+interface:
+  display_name: "Codebase design"
+  short_description: "Design deep modules with clear, testable interfaces"
+
+policy:
+  allow_implicit_invocation: true
