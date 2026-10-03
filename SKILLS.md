@@ -28,6 +28,7 @@ Browse by the work you want to do. Each link opens the skill's `SKILL.md`, which
 | Skill | Use when |
 |---|---|
 | [`code-review`](skills/engineering/code-review/SKILL.md) | You want to review a change for defects, regressions, or design problems. |
+| [`diagnosing-bugs`](skills/engineering/diagnosing-bugs/SKILL.md) | You need to find the cause of a hard bug or a performance regression. |
 | [`pr`](skills/engineering/pr/SKILL.md) | You want a pull request body that reviewers can check quickly. |
 | [`tdd`](skills/engineering/tdd/SKILL.md) | You want to guide software development with a test-first workflow. |
 
