@@ -29,3 +29,9 @@ Browse by the work you want to do. Each link opens the skill's `SKILL.md`, which
 |---|---|
 | [`unslop`](skills/productivity/unslop/SKILL.md) | You want to remove AI writing patterns, filler, and jargon while preserving meaning and tone. |
 | [`writing-for-agents`](skills/productivity/writing-for-agents/SKILL.md) | You are creating or editing skills, `AGENTS.md`, `CLAUDE.md`, or other instructions an agent reads. |
+
+## Operations and provisioning
+
+| Skill | Use when |
+|---|---|
+| [`wizard`](skills/engineering/wizard/SKILL.md) | You need to walk a human through provisioning infrastructure, setting up credentials or CI secrets, or running a one-off migration or cutover. |
