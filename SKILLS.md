@@ -22,3 +22,9 @@ Browse by the work you want to do. Each link opens the skill's `SKILL.md`, which
 |---|---|
 | [`code-review`](skills/engineering/code-review/SKILL.md) | You want to review a change for defects, regressions, or design problems. |
 | [`pr`](skills/engineering/pr/SKILL.md) | You want a pull request body that reviewers can check quickly. |
+
+## Agent instructions and writing
+
+| Skill | Use when |
+|---|---|
+| [`unslop`](skills/productivity/unslop/SKILL.md) | You want to remove AI writing patterns, filler, and jargon while preserving meaning and tone. |
