@@ -1,0 +1,6 @@
+interface:
+  display_name: "Test-driven development"
+  short_description: "Develop software through red-green-refactor cycles"
+
+policy:
+  allow_implicit_invocation: false
