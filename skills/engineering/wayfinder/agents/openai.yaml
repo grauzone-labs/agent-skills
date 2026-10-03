@@ -1,0 +1,6 @@
+interface:
+  display_name: "Wayfinder"
+  short_description: "Plan large initiatives through tracked decision tickets"
+
+policy:
+  allow_implicit_invocation: false

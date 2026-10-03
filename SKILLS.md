@@ -16,6 +16,7 @@ Browse by the work you want to do. Each link opens the skill's `SKILL.md`, which
 | [`to-spec`](skills/engineering/to-spec/SKILL.md) | You want to turn a request and project evidence into an implementation specification. |
 | [`to-tickets`](skills/engineering/to-tickets/SKILL.md) | You want to break approved work into dependency-ordered issues. |
 | [`triage`](skills/engineering/triage/SKILL.md) | You need to assess incoming issues or pull requests and decide what should happen next. |
+| [`wayfinder`](skills/engineering/wayfinder/SKILL.md) | You need to plan and track a large initiative across sessions. |
 
 ## Research and design
 
