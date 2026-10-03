@@ -1,0 +1,6 @@
+interface:
+  display_name: "To tickets"
+  short_description: "Turn approved work into dependency-ordered tickets"
+
+policy:
+  allow_implicit_invocation: false

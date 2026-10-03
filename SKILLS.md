@@ -14,6 +14,7 @@ Browse by the work you want to do. Each link opens the skill's `SKILL.md`, which
 |---|---|
 | [`grilling`](skills/productivity/grilling/SKILL.md) | You want to settle a plan or decision through focused questions. |
 | [`to-spec`](skills/engineering/to-spec/SKILL.md) | You want to turn a request and project evidence into an implementation specification. |
+| [`to-tickets`](skills/engineering/to-tickets/SKILL.md) | You want to break approved work into dependency-ordered issues. |
 
 ## Research and design
 
