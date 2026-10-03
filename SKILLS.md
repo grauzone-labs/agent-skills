@@ -13,6 +13,7 @@ Browse by the work you want to do. Each link opens the skill's `SKILL.md`, which
 | Skill | Use when |
 |---|---|
 | [`domain-modeling`](skills/engineering/domain-modeling/SKILL.md) | You need to define project terminology or record domain design decisions. |
+| [`prototype`](skills/engineering/prototype/SKILL.md) | You want to test an idea quickly before committing to a full implementation. |
 
 ## Development and testing
 

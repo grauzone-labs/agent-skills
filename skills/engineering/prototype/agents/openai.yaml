@@ -1,0 +1,6 @@
+interface:
+  display_name: "Prototype"
+  short_description: "Build throwaway prototypes to answer design questions"
+
+policy:
+  allow_implicit_invocation: true
