@@ -1,0 +1,6 @@
+interface:
+  display_name: "Domain modeling"
+  short_description: "Define domain terminology and architectural decisions"
+
+policy:
+  allow_implicit_invocation: true

@@ -8,6 +8,12 @@ Browse by the work you want to do. Each link opens the skill's `SKILL.md`, which
 |---|---|
 | [`model-routing`](skills/productivity/model-routing/SKILL.md) | Choosing a model for a task, splitting work by deliverable, or applying escalation rules. |
 
+## Research and design
+
+| Skill | Use when |
+|---|---|
+| [`domain-modeling`](skills/engineering/domain-modeling/SKILL.md) | You need to define project terminology or record domain design decisions. |
+
 ## Development and testing
 
 | Skill | Use when |
