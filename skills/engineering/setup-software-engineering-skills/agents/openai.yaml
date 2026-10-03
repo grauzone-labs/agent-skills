@@ -1,0 +1,6 @@
+interface:
+  display_name: "Set up software engineering skills"
+  short_description: "Configure tracking, domain docs, and optional model routing"
+
+policy:
+  allow_implicit_invocation: false

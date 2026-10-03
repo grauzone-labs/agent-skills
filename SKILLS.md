@@ -46,3 +46,9 @@ Browse by the work you want to do. Each link opens the skill's `SKILL.md`, which
 | Skill | Use when |
 |---|---|
 | [`wizard`](skills/engineering/wizard/SKILL.md) | You need to walk a human through provisioning infrastructure, setting up credentials or CI secrets, or running a one-off migration or cutover. |
+
+## Repository setup
+
+| Skill | Use when |
+|---|---|
+| [`setup-software-engineering-skills`](skills/engineering/setup-software-engineering-skills/SKILL.md) | You are configuring issue tracking, labels, and documentation paths for the planning skills in a repository. |
