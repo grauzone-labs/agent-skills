@@ -1,0 +1,6 @@
+interface:
+  display_name: "To spec"
+  short_description: "Create and publish implementation-ready specifications"
+
+policy:
+  allow_implicit_invocation: false
