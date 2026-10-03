@@ -1,0 +1,6 @@
+interface:
+  display_name: "Grilling"
+  short_description: "Settle plans and decisions through focused questions"
+
+policy:
+  allow_implicit_invocation: true
