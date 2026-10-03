@@ -1,0 +1,6 @@
+interface:
+  display_name: "Triage"
+  short_description: "Assess issues and pull requests and prepare agent briefs"
+
+policy:
+  allow_implicit_invocation: false
