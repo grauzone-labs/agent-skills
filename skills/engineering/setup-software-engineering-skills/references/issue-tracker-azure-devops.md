@@ -138,6 +138,43 @@ In these examples, `<work-item-type>` means the mapped type for the current deli
 - **Complete**: `az boards work-item update --id <id> --state "<completed-state>" --discussion "..."`. Satisfy the mapped transition's required author inputs and read the item back to verify the saved state.
 - **Assign / unassign**: `az boards work-item update --id <id> --assigned-to "<display name or email>"`; clear the field with `--fields "System.AssignedTo="` when the process permits it.
 
+## Implementation operations for the generated contract
+
+Used by the `implement-work-item` skill. During setup, record the Azure Repos repository name, the target branch, and the merge types the target branch's policy allows. Work item IDs and pull request IDs are separate spaces; each operation below names the ID it takes.
+
+- **Blocking dependencies**: `az boards work-item show --id <work-item-id> --expand relations --query "relations[?rel=='System.LinkTypes.Dependency-Reverse'].url" -o tsv` lists the work item's Predecessor links; the number that ends each URL is the blocking work item's ID. `System.LinkTypes.Dependency-Reverse` is the system-defined Predecessor reference name; confirm it against the relation metadata recorded during discovery. The same query with `System.LinkTypes.Hierarchy-Reverse` returns the Parent link.
+- **Merged implementation of a dependency**: read the blocker's relations whose `rel` is `ArtifactLink` and whose `attributes.name` is `Pull Request`; each artifact URL ends in a pull request ID. Then run `az repos pr show --id <pr-id> --query '{status:status,target:targetRefName,merge:lastMergeCommit.commitId}'`. The implementation is merged when `status` is `completed` and `target` is the target branch. A blocker in a completed state without such a pull request is unverified.
+- **Commit references**: `#<work-item-id>` in a commit message links the commit to the work item when commit mention linking is enabled for the repository.
+- **List open pull requests**: `az repos pr list --repository "<repository>" --target-branch "<target-branch>" --status active`.
+- **Open a pull request**: `az repos pr create --repository "<repository>" --source-branch "<work-branch>" --target-branch "<target-branch>" --title "..." --description "<Markdown source>" --work-items <work-item-id>`. `--work-items` creates the closing link. Leave `--auto-complete` unset; the user's go completes the pull request. The description holds up to 4000 characters.
+- **Read checks and reviews**: `az repos pr policy list --id <pr-id>` returns each branch policy evaluation with its `status` and whether its configuration is blocking. `az repos pr reviewer list --id <pr-id>` returns the votes: `10` approved, `5` approved with suggestions, `0` no vote, `-5` waiting for author, `-10` rejected. Read review comments through the Pull Request Threads REST resource.
+- **Read the conflict state**: `az repos pr show --id <pr-id> --query mergeStatus -o tsv`. `succeeded` means the pull request can merge, `conflicts` means the work branch needs a sync, and `queued` means the evaluation is still running; read it again.
+- **Complete with a rebase merge**: `az repos pr update` in extension 1.0.8 offers only the default no-fast-forward merge and `--squash`. Select the rebase strategy through the Pull Requests Update REST resource:
+
+  ```sh
+  head=$(az repos pr show --id <pr-id> --query lastMergeSourceCommit.commitId -o tsv)
+  cat > pr-complete.json <<EOF
+  {
+    "status": "completed",
+    "lastMergeSourceCommit": { "commitId": "$head" },
+    "completionOptions": {
+      "mergeStrategy": "rebase",
+      "deleteSourceBranch": true,
+      "transitionWorkItems": true
+    }
+  }
+  EOF
+  az devops invoke --organization "https://dev.azure.com/<organization>" \
+    --area git --resource pullRequests \
+    --route-parameters project="<project>" repositoryId="<repository>" pullRequestId=<pr-id> \
+    --http-method PATCH --in-file pr-complete.json --api-version 7.1 -o json
+  ```
+
+  `rebase` is the strategy the web UI calls "Rebase and fast-forward". Confirm that `$head` is the reviewed head commit before sending. Completion runs asynchronously: read `az repos pr show --id <pr-id>` again until `status` is `completed`. A `mergeStatus` of `rejectedByPolicy` means a branch policy blocks the completion, for example one that excludes the rebase merge type; report it.
+- **Confirm the result**: `git ls-remote --heads origin "<work-branch>"` returns nothing once the source branch is deleted. `transitionWorkItems` moves each linked work item to its next logical state, which can differ from the completed state. Read the work item and apply **Complete** from the work item operations when it has not reached its completed state.
+
+The commands above are checked against the help of extension 1.0.8 and the REST 7.1 reference. Record in the generated contract which of them were exercised against the project.
+
 ## Pull requests as a triage surface
 
 **PRs as a request surface: no.** _(Set to `yes` if this repo treats external PRs as feature requests; the `triage` skill reads this flag.)_
