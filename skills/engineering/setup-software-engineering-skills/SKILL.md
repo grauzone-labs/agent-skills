@@ -11,6 +11,15 @@ metadata:
 
 # Setup software engineering skills
 
+## Table of contents
+
+- [Process](#process)
+  - [1. Explore](#1-explore)
+  - [2. Present findings and ask](#2-present-findings-and-ask)
+  - [3. Confirm target and draft](#3-confirm-target-and-draft)
+  - [4. Write](#4-write)
+  - [5. Done](#5-done)
+
 Scaffold the per-repo configuration that the engineering skills assume:
 
 - **Issue tracker** - where issues live (GitHub by default; local markdown is also supported out of the box)

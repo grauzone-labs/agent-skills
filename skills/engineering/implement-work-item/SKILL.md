@@ -11,6 +11,22 @@ metadata:
 
 # Implement a work item
 
+## Table of contents
+
+- [Input and operating rules](#input-and-operating-rules)
+- [Systems and repository rules](#systems-and-repository-rules)
+- [1. Load the authorized context](#1-load-the-authorized-context)
+- [2. Dependency start gate](#2-dependency-start-gate)
+- [3. Branch and review base](#3-branch-and-review-base)
+- [4. Implement test-first](#4-implement-test-first)
+- [5. Sync the work branch](#5-sync-the-work-branch)
+- [6. Verify](#6-verify)
+- [7. Review both axes](#7-review-both-axes)
+- [8. Pull request gate](#8-pull-request-gate)
+- [9. Pull request and required reviews](#9-pull-request-and-required-reviews)
+- [10. Completion report](#10-completion-report)
+- [11. Merge gate](#11-merge-gate)
+
 Take one work item from the tracker to a merged pull request against the target branch. The user supplies the work item ID and two gos: one that opens the pull request and one that merges it. Derive scope and context from the tracker.
 
 ## Input and operating rules

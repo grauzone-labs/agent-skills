@@ -10,6 +10,22 @@ metadata:
 
 # Diagnosing bugs
 
+## Table of contents
+
+- [Redact](#redact)
+- [Phase 1: build a feedback loop](#phase-1-build-a-feedback-loop)
+  - [Ways to construct one, in roughly this order](#ways-to-construct-one-in-roughly-this-order)
+  - [Tighten the loop](#tighten-the-loop)
+  - [Non-deterministic bugs](#non-deterministic-bugs)
+  - [When you genuinely cannot build a loop](#when-you-genuinely-cannot-build-a-loop)
+  - [Completion criterion: a tight loop that goes red](#completion-criterion-a-tight-loop-that-goes-red)
+- [Phase 2: reproduce and minimise](#phase-2-reproduce-and-minimise)
+  - [Minimise](#minimise)
+- [Phase 3: hypothesise](#phase-3-hypothesise)
+- [Phase 4: instrument](#phase-4-instrument)
+- [Phase 5: fix and regression test](#phase-5-fix-and-regression-test)
+- [Phase 6: cleanup](#phase-6-cleanup)
+
 A discipline for hard bugs. Skip phases only when explicitly justified.
 
 When exploring the codebase, use the project's domain vocabulary: read `docs/agents/domain.md` when it exists, otherwise the relevant `CONTEXT.md`, and check the ADRs in the area you are touching.

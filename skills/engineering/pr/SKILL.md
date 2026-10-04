@@ -10,6 +10,13 @@ metadata:
 
 # PR
 
+## Table of contents
+
+- [Sections](#sections)
+  - [Summary](#summary)
+  - [Evidence](#evidence)
+  - [Merge danger](#merge-danger)
+
 Write a pull request body a reviewer can check quickly. Read the whole change set against the target branch and its commit messages before writing. Use the project's domain vocabulary: read `docs/agents/domain.md` when it exists, otherwise the relevant `CONTEXT.md`. Skip preambles and keep prose brief.
 
 Use this template:
