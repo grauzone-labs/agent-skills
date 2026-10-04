@@ -13,6 +13,28 @@ Issues and specs for this repo live as GitHub issues. Use the `gh` CLI for all o
 
 Infer the repo from `git remote -v` - `gh` does this automatically when run inside a clone.
 
+## Implementation operations
+
+Used by the `implement-work-item` skill. The work item ID is the issue number. During setup, record the target branch and the merge methods the repository and its rulesets allow (`gh api repos/<owner>/<repo> --jq '{allow_rebase_merge,allow_squash_merge,allow_merge_commit}'`).
+
+- **Blocking dependencies**: `gh api repos/<owner>/<repo>/issues/<n>/dependencies/blocked_by --jq '[.[] | {number, state}]'` lists every blocker, including closed ones. `issue_dependencies_summary.blocked_by` on the issue counts open blockers only.
+- **Parent chain**: `gh api repos/<owner>/<repo>/issues/<n>/parent` returns the parent issue; repeat it on each parent until the call returns 404.
+- **Merged implementation of a dependency**: read the pull requests that closed the blocker and whether each is merged into the target branch:
+
+  ```sh
+  gh api graphql -f query='query($o:String!,$r:String!,$n:Int!){repository(owner:$o,name:$r){issue(number:$n){state stateReason closedByPullRequestsReferences(first:10,includeClosedPrs:true){nodes{number merged baseRefName mergeCommit{oid}}}}}}' \
+    -f o=<owner> -f r=<repo> -F n=<n> --jq .data.repository.issue
+  ```
+
+  The implementation is merged when a node has `merged: true` and `baseRefName` is the target branch. A closed blocker without such a pull request is unverified.
+- **Commit references**: `#<n>` in a commit message links the commit to the issue.
+- **List open pull requests**: `gh pr list --base <target-branch> --state open`.
+- **Open a pull request**: `gh pr create --base <target-branch> --head <work-branch> --title "..." --body-file <file>`, with `Closes #<n>` in the body as the closing link.
+- **Read checks and reviews**: `gh pr checks <pr> --required` lists the required status checks; add `--watch` to wait for them. `gh pr view <pr> --json reviewDecision,reviews` returns the review state, and `gh api repos/<owner>/<repo>/pulls/<pr>/comments` the review comments.
+- **Read the conflict state**: `gh pr view <pr> --json mergeable,mergeStateStatus`. `MERGEABLE` means the pull request can merge, `CONFLICTING` means the work branch needs a sync, and `UNKNOWN` means GitHub is still computing; read it again.
+- **Complete with a rebase merge**: `gh pr merge <pr> --rebase --delete-branch --match-head-commit <reviewed-head-sha>`. `--match-head-commit` refuses the merge when the head moved after the review. `--delete-branch` deletes the remote branch and the local one; in a worktree that has the branch checked out, the local deletion can fail after the merge succeeded.
+- **Confirm the result**: `gh pr view <pr> --json state,mergedAt` shows `MERGED`, `git ls-remote --heads origin <work-branch>` returns nothing, and the GraphQL query above shows the issue `CLOSED` with `stateReason` `COMPLETED`.
+
 ## Pull requests as a triage surface
 
 **PRs as a request surface: no.** _(Set to `yes` if this repo treats external PRs as feature requests; the `triage` skill reads this flag.)_
