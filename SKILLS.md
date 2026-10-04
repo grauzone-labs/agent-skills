@@ -35,6 +35,7 @@ Browse by the work you want to do. Each link opens the skill's `SKILL.md`, which
 | [`code-review`](skills/engineering/code-review/SKILL.md) | You want to review a change for defects, regressions, or design problems. |
 | [`diagnosing-bugs`](skills/engineering/diagnosing-bugs/SKILL.md) | You need to find the cause of a hard bug or a performance regression. |
 | [`implement`](skills/engineering/implement/SKILL.md) | You want to implement an approved software change. |
+| [`implement-work-item`](skills/engineering/implement-work-item/SKILL.md) | You want one tracker work item taken from its dependency gate to a merged pull request, with your go before the pull request opens and before it merges. |
 | [`pr`](skills/engineering/pr/SKILL.md) | You want a pull request body that reviewers can check quickly. |
 | [`tdd`](skills/engineering/tdd/SKILL.md) | You want to guide software development with a test-first workflow. |
 
