@@ -1,0 +1,52 @@
+{
+  "skill_name": "writing-for-agents",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "Create a skill named releasing-packages that walks an agent through tagging and publishing an npm package: bump the version, run the test suite, tag the commit, publish with npm, and verify the published version.",
+      "files": [],
+      "expected_output": "A skill directory releasing-packages/ with a SKILL.md and an evals/evals.json that passes scripts/measure.sh.",
+      "expectations": [
+        "The directory is named releasing-packages and the frontmatter name matches it",
+        "The description is written in the third person and states what the skill does and when to use it",
+        "The frontmatter declares compatibility with git and npm",
+        "The workflow opens with a progress checklist the agent copies into its response",
+        "Every step ends on a checkable completion criterion",
+        "The publish step has low freedom: an exact command, not a choice of approaches",
+        "At least three evaluations exist in evals/evals.json before the body is considered done",
+        "scripts/measure.sh on the new directory reports no FAIL"
+      ],
+      "baseline": "Without the skill the agent writes an imperative description, skips compatibility and evaluations, and gives each step a vague bound such as 'make sure tests pass'."
+    },
+    {
+      "id": 2,
+      "prompt": "Review the skill in skills/engineering/implement-work-item against the writing-for-agents skill. Report findings only; change nothing.",
+      "files": [],
+      "expected_output": "A review in the report format of SKILL-REVIEW.md, ordered blocking, behavioural, pruning, with a file and line per finding and no files changed.",
+      "expectations": [
+        "The report begins with the measured body lines, description length, and validator result from scripts/measure.sh",
+        "The imperative description ('Implement one tracker work item ...') is reported as a third-person violation with a proposed rewrite",
+        "The missing compatibility declaration for gh and az is reported",
+        "The absence of output templates for the reports in steps 8, 10, and 11 is reported",
+        "The absence of evals/evals.json is reported",
+        "The host-specific invocation syntax in the description is reported as a portability finding",
+        "No file in the repository is modified"
+      ],
+      "baseline": "Without the skill the agent lists stylistic impressions without line references, misses the third-person rule and the compatibility field, and often edits the file while reviewing."
+    },
+    {
+      "id": 3,
+      "prompt": "Add a line to AGENTS.md so that the agent reads docs/agents/issue-tracker.md before creating, reading, or closing tickets. Edit only AGENTS.md.",
+      "files": ["evals/files/AGENTS.md", "evals/files/issue-tracker.md"],
+      "expected_output": "AGENTS.md gains one line that acts as a context pointer to docs/agents/issue-tracker.md.",
+      "expectations": [
+        "Exactly one line is added to AGENTS.md and no other file changes",
+        "The line leads with the trigger (creating, reading, or closing tickets) before naming the file",
+        "The line names docs/agents/issue-tracker.md as a path",
+        "The line restates nothing from issue-tracker.md itself; the tracker's state names and type roles stay in that file",
+        "The existing line about docs/agents/domain.md is left unchanged"
+      ],
+      "baseline": "Without the skill the agent adds a paragraph that summarises the tracker document into AGENTS.md, duplicating its content and burying the pointer."
+    }
+  ]
+}

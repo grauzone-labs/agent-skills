@@ -44,7 +44,7 @@ Browse by the work you want to do. Each link opens the skill's `SKILL.md`, which
 | Skill | Use when |
 |---|---|
 | [`unslop`](skills/productivity/unslop/SKILL.md) | You want to remove AI writing patterns, filler, and jargon while preserving meaning and tone. |
-| [`writing-for-agents`](skills/productivity/writing-for-agents/SKILL.md) | You are creating or editing skills, `AGENTS.md`, `CLAUDE.md`, or other instructions an agent reads. |
+| [`writing-for-agents`](skills/productivity/writing-for-agents/SKILL.md) | You are creating, reviewing, or editing a skill, `AGENTS.md`, `CLAUDE.md`, a system or subagent prompt, or other instructions an agent reads. |
 
 ## Operations and provisioning
 
