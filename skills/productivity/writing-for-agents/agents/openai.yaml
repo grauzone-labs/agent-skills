@@ -1,6 +1,6 @@
 interface:
   display_name: "Writing for agents"
-  short_description: "Write clear skills and instructions for AI agents"
+  short_description: "Write and review skills and instructions for AI agents"
 
 policy:
   allow_implicit_invocation: true

@@ -1,18 +1,18 @@
 ---
 name: writing-for-agents
-description: Writing documents for agents. Use when creating or editing skills, or modifying AGENTS.md or CLAUDE.md.
+description: Explains the levers that make an agent follow a document the same way every run, and provides the procedure, script, and checklist for creating and reviewing skills. Use when creating, reviewing, or editing a skill, AGENTS.md, CLAUDE.md, a system prompt, or a subagent prompt.
 license: MIT
 metadata:
   author: "Sascha Grau"
-  version: "1.0.0"
+  version: "1.1.0"
   category: "productivity"
 ---
 
 # Writing for agents
 
-Reference for writing any document an agent consumes — a skill, an `AGENTS.md` / `CLAUDE.md`, a doc reached by a pointer. The packaging differs; the writing does not: the same levers make each one predictable — the agent taking the same _process_ every run, not producing the same output.
+Reference for writing any document an agent consumes — a skill, an `AGENTS.md` / `CLAUDE.md`, a system or subagent prompt, a doc reached by a pointer. The packaging differs; the writing does not: the same levers make each one predictable — the agent taking the same _process_ every run, not producing the same output.
 
-When the document you're writing is a skill, read [`SKILL-MECHANICS.md`](references/SKILL-MECHANICS.md) for frontmatter, invocation choice, and router skills.
+When the document you're writing is a skill, read [`SKILL-MECHANICS.md`](references/SKILL-MECHANICS.md) for frontmatter, invocation choice, and router skills. When you create a skill or review one, follow [`SKILL-REVIEW.md`](references/SKILL-REVIEW.md): the creation and review procedures, the checklist both end on, and `scripts/measure.sh`, which runs the checkable items.
 
 ## Context pointers
 

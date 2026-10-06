@@ -1,10 +1,22 @@
 # Skill mechanics
 
-The skill-specific branch of [`writing-for-agents`](../SKILL.md): what changes when the document is a skill — frontmatter, the invocation choice, and router skills. Everything else about writing it is the universal reference in `SKILL.md`.
+The skill-specific branch of [`writing-for-agents`](../SKILL.md): what changes when the document is a skill — frontmatter, the invocation choice, and router skills. Everything else about writing it is the universal reference in `SKILL.md`; the procedures for creating and reviewing a skill are in [`SKILL-REVIEW.md`](SKILL-REVIEW.md).
 
 ## Format baseline
 
-For every skill you create or edit, use the [Agent Skills specification](https://agentskills.io/specification) as the minimum format contract: a directory named for the skill with a `SKILL.md` containing YAML frontmatter and Markdown instructions. Check its current field constraints, progressive-disclosure guidance, and validation guidance before finalizing. Apply repository and host-specific conventions only as additions to that baseline. The reference validator (`skills-ref validate`) rejects fields outside the specification; `disable-model-invocation` is the one host field this repository carries deliberately, and a new one earns its place only when a host reads it (see [Hosts](#hosts)).
+For every skill you create or edit, use the [Agent Skills specification](https://agentskills.io/specification) as the minimum format contract: a directory named for the skill with a `SKILL.md` containing YAML frontmatter and Markdown instructions. Check its current field constraints, progressive-disclosure guidance, and validation guidance before finalizing. Apply repository and host-specific conventions only as additions to that baseline. Before finalizing, run the reference validator, `npx skills-ref validate <skill-dir>`; it rejects fields outside the specification. `disable-model-invocation` is the one rejection this repository accepts deliberately, and a new host field earns its place only when a host reads it (see [Hosts](#hosts)).
+
+## Frontmatter fields
+
+Hosts validate `name` and `description` before loading, so a violation is a blocking defect, not a style note:
+
+- **`name`** — the directory name: lowercase letters, digits, and hyphens; at most 64 characters; never containing `anthropic` or `claude`. Hold one naming pattern across a collection (verb-first, gerund, or noun) so skills are easy to refer to.
+- **`description`** — non-empty, at most 1,024 characters, no angle brackets. Third person throughout ("Implements…", never "Implement…" or "I can…"): it is spliced into the system prompt beside every other skill's description, and a shift of voice there breaks discovery. The content follows the pointer rules in `SKILL.md`: what the skill does, then the trigger branches in the terms the user actually types. When a neighbouring skill owns the borderline cases, name it, so the agent reaches the right one.
+- **`compatibility`** (optional, 1–500 characters) — every CLI, package, network need, or host the body assumes. A skill that silently assumes `gh` fails silently where `gh` is absent.
+- **`metadata`** (optional, free keys) — `author`, `version`, `category` here; bump `version` with every behaviour change.
+- **`license`** and **`allowed-tools`** (optional) — the latter restricts the tools the host grants while the skill runs.
+
+Angle brackets are forbidden anywhere in the frontmatter. In the body, keep placeholders such as `<id>` inside code spans.
 
 ## Invocation
 
