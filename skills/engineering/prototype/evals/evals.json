@@ -1,0 +1,99 @@
+{
+  "skill_name": "prototype",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "I'm not sure the order state machine in order-state.ts handles cancel after ship the way we want. Prototype it so our ops lead can click through it herself.",
+      "files": [
+        "evals/files/order-state.ts"
+      ],
+      "expected_output": "One self-contained HTML demo that opens from the filesystem, drives the order model through free-play buttons and tabbed walkthroughs, and shows every accepted or rejected transition in domain language.",
+      "expectations": [
+        "The agent takes the logic branch and produces exactly one HTML file with every dependency inline, openable without a server or bundler",
+        "The demo opens with a visible paragraph naming the order model and the cancel-after-ship question",
+        "The order logic sits in one pure script module that the page calls into; the module touches no DOM",
+        "The current state and the latest outcome render as labelled fields, each attempt marked accepted or rejected with a domain-language reason",
+        "Every action (place, ship, deliver, cancel) is a free-play button, and rejected transitions render an outcome instead of silently doing nothing",
+        "Guided walkthroughs appear as tabs covering the happy path, cancel after ship, and an illegal action, each resetting to a known initial state",
+        "The agent opens the demo and completes every walkthrough and free-play action before handing it over; without a browser it can drive, the hand-off lists those checks for the ops lead",
+        "The hand-off follows the SKILL.md template and leaves the verdict to the ops lead instead of recording one"
+      ],
+      "baseline": "Without the skill the agent produced a single self-contained prototype.html with four free-play buttons, a state track, a result banner, an action log, a one-click \"place, ship, then cancel\" shortcut and a 20-cell transition table, and verified it with Node and a jsdom click-through. It fell short on the walkthroughs and the hand-off: no guided tabs (only the one shortcut), rejected transitions read \"Nothing happened\" instead of a labelled accepted/rejected outcome with a domain reason, no visible paragraph framing the cancel-after-ship question as the thing to decide, and the reply recorded its own reading of the result plus two alternative rules rather than a template hand-off that leaves the verdict to the ops lead.",
+      "runs": [
+        {
+          "date": "2026-10-06",
+          "host": "Claude Code",
+          "model": "claude-fable-5-1",
+          "result": "pass",
+          "notes": ""
+        },
+        {
+          "date": "2026-10-06",
+          "host": "Codex",
+          "model": "gpt-6-astra",
+          "result": "fail",
+          "notes": "\"The hand-off follows the SKILL.md template and leaves the verdict to the ops lead instead of recording one\": the reply used bold markdown paragraphs Question / Prototype / Checks and dropped the Run line (the open-the-file instruction was folded into Prototype); the verdict was left to the ops lead. The agent also executed rule 5 before any verdict: after `git switch -c` failed in the workspace it cloned the repository to /tmp/order-state-prototype-review and committed the demo on a throwaway branch there. All other expectations held; the model sits in its own <script> with no DOM access, five walkthrough tabs reset to Draft, and the reviewer checks were listed since no browser was available."
+        },
+        {
+          "date": "2026-10-06",
+          "host": "OpenCode",
+          "model": "gpt-6-astra",
+          "result": "fail",
+          "notes": "\"The hand-off follows the SKILL.md template and leaves the verdict to the ops lead instead of recording one\": the reply used bold markdown paragraphs Created / Question / Checks; there was no Prototype or Run line (the path and \"no install or server needed\" were folded into Created); the verdict was left to the ops lead. The agent also loaded the model-routing skill despite the instruction not to, then kept the fixed model. All other expectations held; the model sits in its own <script> with no DOM access, four walkthrough tabs reset to Draft, 20 transitions were checked against order-state.ts with Node, and three reviewer checks were listed."
+        }
+      ]
+    },
+    {
+      "id": 2,
+      "prompt": "Show me a few options for what the settings page could look like.",
+      "files": [
+        "evals/files/settings-page.tsx"
+      ],
+      "expected_output": "In a React project with an existing /settings route, the agent adds three structurally different variants to that route behind ?variant=, a floating bottom switcher gated to development, and reports the URLs and keys.",
+      "expectations": [
+        "The agent takes the UI branch and hosts the variants on the existing /settings route rather than a new page",
+        "Exactly three variants exist unless the user asked for more, named VariantA, VariantB, VariantC, and each pair differs in layout, information hierarchy, or primary affordance",
+        "A line at the prototype location or a top-of-file comment names a concrete design question, the host route, and every supported variant URL",
+        "Missing and invalid keys, including constructor and __proto__, select the default variant; outside development, the pre-existing settings subtree renders without the switcher",
+        "The switcher is a fixed bar at the bottom centre with previous and next arrows that wrap, updates the URL through the router, and ignores arrow keys while an input, textarea, or contenteditable has focus",
+        "The agent starts the prototype with the project's task-runner command, checks every valid URL and the invalid keys, and hands over the command, route URL, and keys with the SKILL.md template; checks blocked by a missing browser are listed for the reviewer"
+      ],
+      "baseline": "Without the skill the agent wrote a standalone settings-options.html with four hash-switched layouts (#a to #d) and rendered Playwright screenshots of each, outside the React project and the existing /settings route. It fell short on every structural expectation: no VariantA/B/C components, no ?variant= contract, no development gate, no floating switcher, no task-runner command, and the reply ended with a recommendation instead of leaving the choice to the reviewer.",
+      "runs": [
+        {
+          "date": "2026-10-06",
+          "host": "Claude Code",
+          "model": "claude-fable-5-1",
+          "result": "pass",
+          "notes": ""
+        }
+      ]
+    },
+    {
+      "id": 3,
+      "prompt": "Prototype the discount rules in discounts.ts. I am offline for the rest of the day. Browser automation is unavailable; give me the demo and the checks to run myself.",
+      "files": [
+        "evals/files/discounts.ts"
+      ],
+      "expected_output": "With the user unreachable and only a backend module in sight, the agent picks the logic branch, states that assumption at the top of the demo, and delivers a single HTML file that drives the discount rules through free play and walkthroughs.",
+      "expectations": [
+        "The agent chooses the logic branch because the surrounding code is a backend module with no page or component",
+        "The demo states the branch assumption in its visible top paragraph alongside the question",
+        "The discount logic is a pure script module (a reducer or small set of pure functions), and the page drives it only through that surface",
+        "Free-play controls cover every rule input (subtotal, item count, membership, coupon), with a button to apply them; walkthrough tabs include the happy path, the capped-rate edge case, and an unrecognised coupon that earns no coupon discount",
+        "The agent writes only the code needed to answer the question, keeps state in memory, and names the file so a casual reader identifies it as a prototype",
+        "The hand-off follows the SKILL.md template, lists the walkthrough and free-play checks for the user to run, and leaves the verdict pending"
+      ],
+      "baseline": "Without the skill the agent wrote a Node CLI demo.ts (scenario table plus ad-hoc cart arguments) and a node:test checks.ts with 16 assertions, both run with plain node, and left discounts.ts untouched. It fell short of a clickable demo: no HTML file, no free-play controls or walkthrough tabs, nothing a non-developer can drive, no visible question or branch assumption, and the reply listed five findings on the rules as decisions for the user with run commands rather than the template hand-off with checks.",
+      "runs": [
+        {
+          "date": "2026-10-06",
+          "host": "Claude Code",
+          "model": "claude-fable-5-1",
+          "result": "fail",
+          "notes": "\"The demo states the branch assumption in its visible top paragraph alongside the question\": the top paragraph states an assumption about which question the demo answers (\"no issue text named the question, so this demo takes the one the code raises\") but never says that the logic branch was taken because discounts.ts is a backend module with no page or component. All other expectations held: one discounts.prototype.html with a pure model section (rule table, breakdown, reducer) that the page drives only through reduce() and breakdown(), free-play controls for subtotal, items, membership and coupon with apply buttons, three walkthrough tabs (member uses the coupon, big order hits the cap, unrecognised and lowercase coupons), and a template hand-off with six numbered checks for the user and the verdict left pending."
+        }
+      ]
+    }
+  ]
+}
