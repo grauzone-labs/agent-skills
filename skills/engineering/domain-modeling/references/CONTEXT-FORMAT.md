@@ -1,16 +1,6 @@
 # CONTEXT.md format
 
-## Select the context
-
-When `docs/agents/domain.md` exists, load it first. It defines the repository-specific domain-document layout.
-
-Otherwise use these defaults:
-
-- If `CONTEXT-MAP.md` exists at the repository root, read it to find the context for the current topic.
-- If only a root `CONTEXT.md` exists, use the single root context.
-- If neither exists, create a root `CONTEXT.md` lazily when the first term is resolved.
-
-For a multi-context repository, update the context selected by `CONTEXT-MAP.md`. If the topic crosses contexts, keep each term in its owning context and make the relationship explicit in the map or the relevant glossary entries. Ask the user when ownership remains unclear.
+The default format for the glossary in a `CONTEXT.md` and for the `CONTEXT-MAP.md` of a multi-context repository.
 
 ## Structure
 
@@ -37,11 +27,13 @@ _Avoid_: Client, buyer, account
 ## Rules
 
 - **Be opinionated.** When multiple words exist for the same concept, pick the best one and list the others under `_Avoid_`.
-- **Keep definitions tight.** One or two sentences maximum. Define what the term is, not how it is implemented.
-- **Keep the glossary context-specific.** Include concepts unique to the context; leave general programming concepts out.
+- **Keep definitions tight.** One or two sentences maximum. Define the term's domain meaning.
+- **Keep the glossary context-specific.** Include domain concepts with a meaning specific to this context.
 - **Group related terms.** Use subheadings when natural clusters emerge; keep a flat list only when the terms form one cohesive area.
 
-## Example context map
+## Context map
+
+A multi-context repository keeps one `CONTEXT-MAP.md` at the repository root. When a topic crosses contexts, keep each term in its owning context's `CONTEXT.md` and record the relationship under `## Relationships` in the map.
 
 ```md
 # Context map
