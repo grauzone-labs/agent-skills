@@ -1,6 +1,6 @@
 # Smell baseline
 
-Apply this Fowler (_Refactoring_, ch. 3) baseline when reviewing standards. A repository standard overrides it. Report every match as a labelled judgement call, not a hard violation, and omit behavior enforced by tooling.
+Baseline for the Standards axis, from Fowler's _Refactoring_ (ch. 3). A standards source overrides it.
 
 - **Mysterious Name** - a function, variable, or type does not reveal what it does or holds. Rename it; if no honest name comes, clarify the design.
 - **Duplicated Code** - the same logic shape appears in more than one changed hunk or file. Extract the shared shape.
@@ -12,5 +12,5 @@ Apply this Fowler (_Refactoring_, ch. 3) baseline when reviewing standards. A re
 - **Divergent Change** - a file changes for unrelated reasons. Split by reason to change.
 - **Speculative Generality** - abstraction, parameters, or hooks serve needs absent from the spec. Inline until a real need appears.
 - **Message Chains** - callers navigate a long `a.b().c().d()` chain. Hide the walk behind the first object.
-- **Middle Man** - a class or function mostly delegates. Call the real target directly.
+- **Middle Man** - a class or function delegates without hiding anything (fails the deletion test of `codebase-design`). Call the real target directly.
 - **Refused Bequest** - a subclass or implementer ignores or overrides most inherited behavior. Prefer composition.
