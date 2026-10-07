@@ -1,0 +1,129 @@
+{
+  "skill_name": "wayfinder",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "wayfinder: we want to move the whole product catalogue search from plain keyword matching to ranked relevance, but nobody knows where to start",
+      "files": [
+        "evals/files/issue-tracker.md"
+      ],
+      "expected_output": "With the fixture placed at docs/agents/issue-tracker.md and no existing map, the agent grills the user to a one-line destination, grills breadth-first for the frontier, creates the map and its specifiable tickets on the local tracker, wires blocking in a second pass, and stops without resolving any non-research ticket.",
+      "expectations": [
+        "The agent reads docs/agents/issue-tracker.md before creating any map or ticket",
+        "The agent runs the grilling and domain-modeling skills to settle the destination before any ticket is proposed, and the destination the user confirmed fits in one or two lines",
+        "The map file carries the Destination, Notes, Decisions so far, Not yet specified, and Out of scope sections, with Decisions so far empty at creation and the fog written into Not yet specified",
+        "Every ticket file has a Type line with one of research, prototype, grilling, or task, a Wayfinding: open line at creation, a numeric prefix in breadth-first discovery order, and a Question heading",
+        "Blocked by lines are added only after every ticket file exists",
+        "Each frontier research ticket is resolved in the session with the research skill as research lead, its finding linked from the ticket and one index line appended to Decisions so far, before the agent stops",
+        "No grilling, prototype, or task ticket is resolved in the charting session",
+        "The agent names the map and each ticket by its title in its narration, with the id or path inside the link"
+      ],
+      "baseline": "Without the skill the agent read the tracker contract and the README, then wrote a map and nine tickets in its own layout (Goal, Done when, Known constraints, a ticket index table instead of Destination, Notes, Decisions so far, Not yet specified, Out of scope) before asking the user anything; the destination was never grilled or confirmed with the user. It then resolved the grilling ticket 01 itself from relayed answers and a research ticket 10 it discovered along the way, recording multi-paragraph answers in Decisions so far instead of one-line index lines, and wired Blocked by lines at creation rather than in a second pass. Each ticket did carry a Type line, a Wayfinding line, and a Question heading.",
+      "runs": [
+        {
+          "date": "2026-10-06",
+          "host": "Codex",
+          "model": "gpt-6-astra",
+          "result": "pass",
+          "notes": ""
+        },
+        {
+          "date": "2026-10-06",
+          "host": "OpenCode",
+          "model": "gpt-6-astra",
+          "result": "pass",
+          "notes": ""
+        },
+        {
+          "date": "2026-10-06",
+          "host": "Claude Code",
+          "model": "claude-opus-5-5",
+          "result": "fail",
+          "notes": "\"Blocked by lines are added only after every ticket file exists\": the agent wrote 03-choose-search-engine.md with \"Blocked by: 01\" already in its initial Write, in the same pass that created the tickets, and never ran a separate wiring pass; on the file tracker the numeric ids were known up front, so the \"issues need ids before they can reference each other\" rationale did not hold it to a second pass. Every other expectation held: it read docs/agents/issue-tracker.md first, ran grilling and domain-modeling to a two-line destination the user confirmed (Q1, Q2) before proposing tickets, created the map with all five sections and an empty Decisions so far, created three tickets (01 research, 02 task, 03 grilling) with Type, Wayfinding: open, numeric prefix, and Question heading, claimed and resolved 01 through the research skill as lead with a dispatched worker and a linked finding in docs/research/ plus one index line, left 02 and 03 open, and named the map and tickets by title with the path inside the link."
+        }
+      ]
+    },
+    {
+      "id": 2,
+      "prompt": "wayfinder: work the search relevance map at .scratch/search-relevance/map.md",
+      "files": [
+        "evals/files/issue-tracker.md",
+        "evals/files/scratch/search-relevance/map.md",
+        "evals/files/scratch/search-relevance/issues/01-failing-queries.md",
+        "evals/files/scratch/search-relevance/issues/02-engine-choice.md",
+        "evals/files/scratch/search-relevance/issues/03-synonym-source.md"
+      ],
+      "expected_output": "With the tracker fixture at docs/agents/issue-tracker.md and the map fixtures under .scratch/search-relevance/, the agent loads the map body, picks ticket 02 as the only frontier ticket, claims it, resolves it by grilling the user, records the answer, appends the index line, and updates the fog before stopping after that one ticket.",
+      "expectations": [
+        "The agent reads docs/agents/issue-tracker.md and map.md before scanning the ticket files for the frontier",
+        "The agent chooses 02-engine-choice.md, the lowest-numbered open unblocked ticket, and sets Wayfinding: claimed in it before asking the user anything",
+        "The agent resolves the ticket through the grilling and domain-modeling skills with the user, supplying none of the user's answers itself",
+        "02-engine-choice.md ends with an Answer heading and Wayfinding: resolved, and map.md gains one Decisions so far line that links the ticket by its title with a one-line gist",
+        "Ticket 03 stays open and unclaimed; at most one non-research ticket is resolved in the session",
+        "Any fog the decision made specifiable is moved out of Not yet specified into a new ticket file with a Blocked by line where it depends on open tickets, and the measurement area stays in Not yet specified if the decision did not sharpen it"
+      ],
+      "baseline": "Without the skill the agent read the tracker contract and the map, picked ticket 02 as the frontier, set Wayfinding: claimed before asking anything, and put six questions to the user; after the answers it wrote an Answer, set Wayfinding: resolved, appended an index line to Decisions so far, moved personalisation into a new ticket 04 blocked by 03, and left measurement in Not yet specified. It then claimed ticket 03 and started a second grill in the same session instead of stopping after one ticket, ran neither the grilling nor the domain-modeling skill (no design tree, no recommended answers, no CONTEXT.md), and stored the whole question list inside the ticket file.",
+      "runs": [
+        {
+          "date": "2026-10-06",
+          "host": "Claude Code",
+          "model": "claude-fable-5-1",
+          "result": "pass",
+          "notes": ""
+        }
+      ]
+    },
+    {
+      "id": 3,
+      "prompt": "wayfinder: add a --verbose flag to our CLI that prints each HTTP request it makes",
+      "files": [
+        "evals/files/issue-tracker.md"
+      ],
+      "expected_output": "With the tracker fixture at docs/agents/issue-tracker.md, the agent grills for the destination, finds that the breadth-first pass surfaces no fog because the change fits one session, reports that the way is already clear, asks the user how to proceed, and creates no map or ticket.",
+      "expectations": [
+        "The agent runs the grilling skill for the destination before deciding whether a map is needed",
+        "The agent states that no fog surfaced and the journey fits one session",
+        "The agent asks the user how they would like to proceed and stops",
+        "No map.md and no ticket file is created under .scratch/",
+        "No code is changed in the repository"
+      ],
+      "baseline": "Without the skill the agent treated the prompt as an implementation task: it asked nothing about the destination, rewrote src/cli.js with a parseArgs/request wrapper and a --verbose/-v flag that logs method, URL, and status to stderr, added test/cli.test.js with five node --test cases, and also changed unrelated behaviour (encoded the product id, exit code 1 on errors). It never stated that the change fits one session or asked the user how to proceed, and left the working tree modified. It created no map or ticket under .scratch/, which matches the expectation only by accident.",
+      "runs": [
+        {
+          "date": "2026-10-06",
+          "host": "Claude Code",
+          "model": "claude-fable-5-1",
+          "result": "fail",
+          "notes": "\"The agent runs the grilling skill for the destination before deciding whether a map is needed\": the agent loaded wayfinder (user-side /wayfinder invocation, since disable-model-invocation blocks the Skill tool for subagents), read the CLI, and then wrote \"both are grilling sessions, which need a live human. You aren't here to answer, so I ran the scan myself against the code instead of invoking the grilling skill\"; it never asked the user for the destination. The remaining expectations held: it stated that no fog surfaced and the change fits one session, asked how to proceed in the closing report, created nothing under .scratch/, and changed no code."
+        }
+      ]
+    },
+    {
+      "id": 4,
+      "prompt": "wayfinder: work ticket 03 on the search relevance map at .scratch/search-relevance/map.md",
+      "files": [
+        "evals/files/issue-tracker.md",
+        "evals/files/scratch/search-relevance/map.md",
+        "evals/files/scratch/search-relevance/issues/01-failing-queries.md",
+        "evals/files/scratch/search-relevance/issues/02-engine-choice.md",
+        "evals/files/scratch/search-relevance/issues/03-synonym-source.md"
+      ],
+      "expected_output": "With the tracker fixture at docs/agents/issue-tracker.md and the map fixtures under .scratch/search-relevance/, the agent finds that ticket 03 is blocked by the open ticket 02, reports that state, and stops without claiming it.",
+      "expectations": [
+        "The agent reads docs/agents/issue-tracker.md and map.md before judging ticket 03",
+        "The report names 03-synonym-source.md as blocked and 02-engine-choice.md as its open blocker, both linked by title",
+        "No Wayfinding line changes, no Answer is written, and map.md is unchanged"
+      ],
+      "baseline": "Without the skill the agent read the tracker contract, the map, and all three tickets, found that 03 is blocked by the still-open ticket 02, changed nothing, and reported that state. It referred to the tickets by number and path instead of by title with the path inside a link, and offered to remove the Blocked by line from 03 on request, which the skill rules out.",
+      "runs": [
+        {
+          "date": "2026-10-06",
+          "host": "Claude Code",
+          "model": "claude-fable-5-1",
+          "result": "pass",
+          "notes": ""
+        }
+      ]
+    }
+  ]
+}
