@@ -1,10 +1,11 @@
 ---
 name: pr
-description: "Write a pull request body that is fast to review: a summary visual, before-and-after evidence, and the merge danger. Use when writing or revising a PR or merge request description."
+description: "Writes a pull request body that is fast to review: a summary visual, before-and-after evidence, and the merge danger. Use when writing or revising a PR or merge request description, or opening the pull request."
+compatibility: Requires git. Publishing the pull request needs network access and gh on GitHub or the CLI named in docs/agents/issue-tracker.md.
 license: MIT
 metadata:
   author: "Sascha Grau"
-  version: "1.0.0"
+  version: "1.1.0"
   category: "engineering"
 ---
 
@@ -17,14 +18,20 @@ metadata:
   - [Evidence](#evidence)
   - [Merge danger](#merge-danger)
 
-Write a pull request body a reviewer can check quickly. Read the whole change set against the target branch and its commit messages before writing. Use the project's domain vocabulary: read `docs/agents/domain.md` when it exists, otherwise the relevant `CONTEXT.md`. Skip preambles and keep prose brief.
+The target branch is the one the user names, otherwise the repository's default branch. Read the whole change set against the target branch and its commit messages before writing. When the repository cannot be read, write from the supplied change material, which is every file attached to the request or present in the working directory: list the working directory and read those files before asking the user for anything, and name the unreadable repository in Evidence.
+
+Use the project's domain vocabulary: follow `docs/agents/domain.md` when it exists; otherwise use the root `CONTEXT-MAP.md` to locate the affected contexts' `CONTEXT.md`, or the root `CONTEXT.md` for a single context. When domain documents are absent, use the existing code's terms.
 
 Use this template:
 
 ```markdown
 ## Summary
 
-<diagram, diff-sketch, or tree>
+<optional: the closing link to the work item the change completes, in the form the tracker contract names; Closes #id on GitHub>
+
+<one or two sentences naming the key point>
+
+<visual: pseudocode, tree, Mermaid, diff, or code block>
 
 ## Evidence
 
@@ -37,14 +44,14 @@ Use this template:
 
 <optional: description>
 
-**Blast Radius:** <one-word description>
+**Blast Radius:** <the scope a regression reaches>
 
 <optional: potential ramifications of merge>
 ```
 
-Return the body as Markdown. When the user asks to open the PR, publish it through the tracker contract in `docs/agents/issue-tracker.md` when it exists.
+Unless the user asks to open the PR, your response to the user is the body itself, as Markdown with brief prose, from `## Summary` to the end of Merge Danger with nothing before or after it, also when the input was a file. When the user asks to open the PR, publish it through the PR-opening operation in `docs/agents/issue-tracker.md` when the contract names one, otherwise with the pull request system's CLI (`gh pr create --base <target-branch> --title "..." --body-file <file>` on GitHub), and return `PR: <url>`. When publishing fails, keep the body and report `PR publication failed: <operation>; <error>; body: <path>`.
 
-**Complete when:** the body has all three sections, each visual sits next to the text it supports, the evidence shows before and after, and the merge danger names the door and the blast radius.
+**Complete when:** the body has all three sections, each visual sits next to the text it supports, the evidence shows before and after or states what was not captured, and the merge danger names the door and the blast radius.
 
 ## Sections
 
@@ -90,7 +97,7 @@ src/
 └── transport/      # sends API requests
 ```
 
-- Show component interaction, control flow, or data flow with Mermaid:
+- Show component interaction or data flow with Mermaid:
 
 ```mermaid
 sequenceDiagram
@@ -102,7 +109,7 @@ sequenceDiagram
     Daemon-->>UI: stream result
 ```
 
-- Use `diff` when the point is what changes and the surrounding shape already exists. Match the diff shape to the topic.
+- Show what changes, when the surrounding shape already exists, as a `diff`: the tree or pseudocode above with `+` and `-` lines.
 
 For a component change:
 
@@ -113,32 +120,6 @@ For a component change:
 +    <RunSkillButton />
    <SessionTimeline>
 +    <SkillResultCard />
-```
-
-For a file-layout change:
-
-```diff
- src/
- ├── commands/
-+│   └── show-me.ts       # expands the slash command
- ├── sessions/
--└── transport.ts
-+└── transport/
-+    ├── client.ts
-+    └── stream.ts
-```
-
-For a call-tree or call-stack change:
-
-```diff
- submitForm
-   createSession
-     persistPrompt
-+    expandSkillMention
-     launchAgent
--  navigateToSession
-+  navigateToSession
-+    subscribeToEvents
 ```
 
 For a state or control-flow change:
@@ -152,7 +133,7 @@ For a state or control-flow change:
 +  invalidate cache
 ```
 
-- Show the whole block when most of it is new, when omitted context would hide ownership or order, or when the reviewer needs a copyable target shape:
+- Show code that is mostly new, whose omitted context would hide ownership or order, or that the reviewer needs as a copyable target shape, as the whole block:
 
 ```ts
 function expandSkill(command: string): string {
@@ -163,10 +144,10 @@ function expandSkill(command: string): string {
 
 ### Evidence
 
-Concrete evidence that the change works, shown as before and after. Screenshots rank first when the change is visual and the environment can capture them. Execution evidence ranks next: test results and console output, naming the exact test that failed before and passes now.
+Screenshots rank first when the change is visual and the environment can capture them. Execution evidence ranks next: test results and console output, naming the exact test that failed before and passes now. For each side the environment cannot capture, write the command that produces it and state that it was not run.
 
 ### Merge danger
 
-Name the **door**. A two-way door can be walked back; a one-way door cannot. A PR that is cheap to roll back is lower risk; destructive actions and hard-to-reverse decisions are one-way doors.
+Name the **door**: one-way when the merge cannot be walked back (destructive migrations, published interfaces), two-way when a revert restores the previous state.
 
 Name the **blast radius**: the scope a regression would reach, such as layout shift, breakage for consumers, mobile responsiveness, data, or performance.
