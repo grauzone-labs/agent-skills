@@ -1,26 +1,28 @@
 ---
 name: unslop
-description: Cut AI tells from any writing. Use when editing or reviewing prose, documentation, or messages for AI-sounding patterns.
+description: Cuts AI tells from any writing. Use when the user says slop or unslop, or wants prose, documentation, or messages edited or reviewed for anything that sounds like AI.
+compatibility: Requires bash, grep, and sed for scripts/scan.sh.
 license: MIT
 disable-model-invocation: true
 metadata:
   author: "Sascha Grau"
-  version: "1.0.0"
+  version: "1.1.0"
   category: "productivity"
 ---
 
 # Unslop
 
-Edit text to remove AI patterns.
-
 ## Process
 
-1. Scan for the patterns below.
-2. Rewrite. Preserve meaning, match intended tone.
+Keep every fact, number, name, command, code span, URL, and defined domain term, and keep the author's register (a casual message stays casual, a spec stays terse). Name only sources, actors, mechanisms, and measurements the text supplies. These constraints beat a rule's replacement: `--features` stays in a command, and "vector" stays where the text defines it as a mathematical term.
 
-## Patterns to detect and fix
+1. **Find the tells.** When the text is a file, execute this skill's `scripts/scan.sh <file>`; it prints candidate hits for the rules its header lists. If it exits 2, note `Scan unavailable: <error>.` for the final reply. Then read the whole text once against every rule, the scanned ones included (the regexes are partial and flag some literal uses), and judge each hit in context. Pasted text gets only the reading pass. Done when every rule and every hit has been checked against the whole text.
+2. **Report or rewrite.** Review only (the user asked for a review or said not to change the text): leave the text unchanged and reply with one line per confirmed tell, `<line>: rule <n>: "<quoted phrase>"`, counting pasted lines from 1 and prefixing `<file>:` when more than one file was reviewed; with no tells, reply `No tells found.` Stop after the report; it is the whole reply, with no explanation, change list, or summary before or after it. Otherwise fix every confirmed tell: edit a file in place, or rewrite pasted text. Done when every confirmed tell has a fix that keeps the constraints above.
+3. **Re-check and deliver.** Repeat step 1 on the result and compare it with the original for lost facts. A fix that introduced a new tell (an em dash swapped for a colon, a split sentence left as a fragment) or dropped a fact goes back to step 2. Done when a pass finds nothing. Then deliver exactly one reply, with no explanation, change list, or summary before or after it: for pasted text, the rewritten text alone; for a file, reply `Updated <file>. Re-check: no tells found.` or `Unchanged <file>. Re-check: no tells found.`, plus the scan note if there was one.
 
-Rule numbers are stable ids that other skills cite. A removed rule leaves a gap.
+## Rules
+
+Rule numbers are stable ids cited by other documents; a gap is a removed rule.
 
 ### Content
 
@@ -38,10 +40,10 @@ Rule numbers are stable ids that other skills cite. A removed rule leaves a gap.
 
 ### Style
 
-13. **Em dash overuse.** Avoid em dashes entirely. Use periods or commas only (no parentheses, no en dashes, no hyphen-as-dash substitutes). If a thought needs separation, end the sentence or use a comma.
-14. **Colon overuse.** Colons are fine before a list or example. Not as mid-sentence connectors. "If you're coming from traditional automation: instead of registering event handlers, you describe conditions" adds nothing with the colon. Rewrite to let the point stand on its own without comparison framing. "Describing when the scheduler should fire works best as plain English." Same meaning, no crutch punctuation.
-15. **Boldface overuse.** Don't bold every proper noun or acronym.
-16. **Inline-header lists.** The tell is a bold label and colon that restates the line: "**Performance:** Performance improved...". Convert those to prose. A bold lead-in that ends in a period, names the item, and is followed by genuinely new detail ("**Schema in TypeScript.** Tables live in one file.") is fine, not a tell.
+13. **Em dash overuse.** Replace every em dash with a period or a comma; an en dash, a spaced hyphen, or parentheses standing in for a dash get the same replacement.
+14. **Colon overuse.** A colon introduces a list or an example. A colon used as a mid-sentence connector ("If you're coming from traditional automation: instead of registering event handlers, you describe conditions") gets rewritten so the point stands on its own: "Describing when the scheduler should fire works best as plain English."
+15. **Boldface overuse.** Reserve bold for the one item the reader must find; proper nouns and acronyms stay plain.
+16. **Inline-header lists.** The tell is a bold label and colon that restates the line: "**Performance:** Performance improved...". Merge those bullets into one sentence or paragraph with no list markers left. A bold lead-in that ends in a period, names the item, and is followed by genuinely new detail ("**Schema in TypeScript.** Tables live in one file.") is fine, not a tell.
 17. **Title case headings.** Use sentence case.
 18. **Decorative emojis.** Remove from headings and bullets.
 19. **Curly quotes.** Replace with straight quotes.
@@ -59,14 +61,14 @@ Rule numbers are stable ids that other skills cite. A removed rule leaves a gap.
 
 ### Jargon
 
-26. **Abstract metaphor nouns.** Substrate, wedge, vector, locus, vantage, nexus, primitive (as noun), harness (as metaphor), surface (as in "API surface"), bedrock, scaffolding (as metaphor), modality, paradigm, gold-plating, ratchet (as metaphor), evacuate (for moving code), endgame, north star, flywheel. These read as technical but usually have a plainer concrete word. "Substrate" becomes "base". "Wedge in" becomes "add". "Vector" becomes "way" or "method". "Gold-plating" becomes "more than the job needs". "Ratchet" becomes the mechanism's real name or "a limit that only tightens". "Evacuate" becomes "move out". "Endgame" becomes "the last phase". Pick the concrete word.
+26. **Abstract metaphor nouns.** Substrate, wedge, vector, locus, vantage, nexus, primitive (as noun), harness (as metaphor), surface (as in "API surface"), bedrock, scaffolding (as metaphor), modality, paradigm, gold-plating, ratchet (as metaphor), evacuate (for moving code), endgame, north star, flywheel. "Substrate" becomes "base". "Wedge in" becomes "add". "Vector" becomes "way" or "method". "Gold-plating" becomes "more than the job needs". "Ratchet" becomes the mechanism's real name or "a limit that only tightens". "Evacuate" becomes "move out". "Endgame" becomes "the last phase". Pick the concrete word.
 
 ### Plain speech
 
-27. **Say what it does, not how it feels.** "the database stays close at hand", "SQL you can read", "types that follow your schema" name a feeling. The fix names the mechanism or a number: "`.toSQL()` returns the exact string sent to the database", "a column rename fails the build". Ask what the sentence tells the reader to do or know, then write that. If you can't restate it as a concrete instruction, fact, or number, cut it. One more check: if the sentence could appear unchanged in another project's docs, it says nothing about this one. Cut it.
+27. **Say what it does, not how it feels.** "the database stays close at hand", "SQL you can read", "types that follow your schema" name a feeling. The fix names the mechanism or a number: "`.toSQL()` returns the exact string sent to the database", "a column rename fails the build". Ask what the sentence tells the reader to do or know, then write that. If you can't restate it as a concrete instruction, fact, or number, cut it. One more check: a sentence that could appear unchanged in another project's docs and carries no instruction, fact, or number says nothing about this one. Cut it.
 28. **Shorten or split dense sentences.** If the reader has to backtrack to parse a sentence, break it in two or drop clauses. One idea per sentence.
-29. **Active voice.** Prefer it. Catch "is/are/was/were + past participle" and name the actor: "queries are validated" becomes "the compiler validates queries", "the file is parsed by the loader" becomes "the loader parses the file". Passive is fine only when the actor is unknown or genuinely doesn't matter.
-30. **Cut adverbs, or use a stronger verb.** "runs quickly" becomes "is fast" or the number. "significantly improves" becomes the measured delta. An adverb propping up a weak verb means the verb is wrong.
-31. **Prefer the plain word.** "utilize" becomes "use", "leverage" becomes "use", "facilitate" becomes "help", "numerous" becomes "many", "in the event that" becomes "if". The fancier synonym is rarely clearer.
-32. **Mannered prose.** Metaphor or flourish where a literal phrase exists: aphorisms ("wire it or delete it"), rhetorical fragments for effect, personified code ("the plan holds it"), figurative verbs ("rides along", "stands on"), stock framing phrases. "A dial worth turning" becomes "a parameter worth varying". Say what you mean. Rule 26 covers the metaphor nouns.
+29. **Active voice.** Catch "is/are/was/were + past participle" and name the actor the text supplies: "the file is parsed by the loader" becomes "the loader parses the file". A passive whose actor the text does not name stays as written and is not reported.
+30. **Cut adverbs, or use a stronger verb.** "runs quickly" becomes "is fast" or the number. "significantly improves" becomes the measured delta. An adverb that carries a fact ("automatically", "twice") stays.
+31. **Prefer the plain word.** "utilize" becomes "use", "leverage" becomes "use", "facilitate" becomes "help", "numerous" becomes "many", "in the event that" becomes "if".
+32. **Mannered prose.** Metaphor or flourish where a literal phrase exists: aphorisms ("wire it or delete it"), rhetorical fragments for effect, personified code ("the plan holds it"), figurative verbs ("rides along", "stands on"), stock framing phrases. "A dial worth turning" becomes "a parameter worth varying". Rule 26 covers the metaphor nouns.
 33. **Over-compression.** Dropped articles, verbless fragments, symbol-speak, and abbreviations that make the reader decode instead of read. "Parser rejects bad date → exit 2, no write" becomes "The parser rejects a bad date, exits with code 2, and writes nothing." Write whole sentences with their articles and verbs, and spell out arrows and abbreviations.
