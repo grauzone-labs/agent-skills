@@ -1,0 +1,126 @@
+{
+  "skill_name": "setup-software-engineering-skills",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "setup-software-engineering-skills",
+      "files": [],
+      "expected_output": "In a fresh clone whose only remote is a GitHub repository, with a CLAUDE.md but no AGENTS.md, no docs/agents/, no monorepo signals, and the triage skill installed, the agent proposes GitHub, asks exactly one triage question, writes single-context domain docs without asking, and edits CLAUDE.md only after the user approves the draft.",
+      "expectations": [
+        "The agent reads the remote, both instruction files, docs/agents/, .scratch/, and the monorepo signals before proposing anything",
+        "Section A leads with GitHub as the recommended tracker and the PRs-as-a-request-surface flag is written as no without the agent asking about it",
+        "Section B is a single question whether to keep the default triage labels, recommending yes",
+        "Section C is written as single-context without a question",
+        "The agent shows the ## Agent skills block and the full contents of docs/agents/issue-tracker.md, docs/agents/domain.md, and docs/agents/triage-labels.md before writing any file",
+        "CLAUDE.md gains the ## Agent skills block and no AGENTS.md is created",
+        "docs/agents/issue-tracker.md keeps the GitHub template's Conventions, Implementation operations including Tick an acceptance criterion, and Wayfinding operations sections",
+        "The ### Model routing sub-block appears first and only when model-routing is installed and CLAUDE.md carries no other model-routing instruction, so the routing pointer appears exactly once",
+        "Before showing the draft, the agent resolves the target branch and allowed merge methods with the GitHub template's lookups, or reports the failed lookup and proceeds only when the user accepts a labelled gap with its operations blocked",
+        "The agent opens with the progress checklist and closes with the report template naming each written file and its consumers"
+      ],
+      "baseline": "Without the skill the agent read CLAUDE.md, package.json, and the user-wide skill directories, then wrote a new AGENTS.md with a trigger-to-skill table and a default workflow, and added an @AGENTS.md import to CLAUDE.md. It never ran git remote -v, proposed no issue tracker, asked no triage question, wrote nothing under docs/agents/, did not resolve the target branch or merge methods, and wrote files without showing a draft or asking for approval.",
+      "runs": [
+        {
+          "date": "2026-10-06",
+          "host": "Claude Code",
+          "model": "claude-fable-5-1",
+          "result": "fail",
+          "notes": "\"The agent shows the ## Agent skills block and the full contents of docs/agents/issue-tracker.md, docs/agents/domain.md, and docs/agents/triage-labels.md before writing any file\": the draft showed the block in full but described the three docs files by reference (\"the complete GitHub template with these setup values filled in\", \"table unchanged\", \"domain.md unchanged\") instead of showing their contents. Every other expectation held: exploration covered remote, both instruction files, docs/agents/, .scratch/, and the monorepo signals; gh api resolved main and the three merge methods before the draft; one triage question; single-context without asking; CLAUDE.md gained the block with ### Model routing first and once; checklist opened and report template closed. The Skill tool refused the load (disable-model-invocation), so the agent read SKILL.md and its references directly."
+        },
+        {
+          "date": "2026-10-06",
+          "host": "OpenCode",
+          "model": "gpt-6-astra",
+          "result": "pass",
+          "notes": ""
+        },
+        {
+          "date": "2026-10-06",
+          "host": "Codex",
+          "model": "gpt-6-astra",
+          "result": "pass",
+          "notes": ""
+        }
+      ]
+    },
+    {
+      "id": 2,
+      "prompt": "setup-software-engineering-skills",
+      "files": [],
+      "expected_output": "In a repository with no git remote, no AGENTS.md or CLAUDE.md, an existing .scratch/ directory, and no triage skill installed, the agent proposes local markdown, skips the triage section, asks which instruction file to create, and writes no triage-labels file.",
+      "expectations": [
+        "Section A leads with local markdown as the recommended tracker",
+        "The agent asks no triage-label question and states that Section B is skipped because triage is not installed",
+        "The agent asks the user whether to create AGENTS.md or CLAUDE.md before drafting the block",
+        "The drafted ## Agent skills block has no ### Triage labels sub-block and no docs/agents/triage-labels.md is written",
+        "docs/agents/issue-tracker.md follows the local-markdown template, including one file per ticket under .scratch/<feature-slug>/issues/ and the Wayfinding operations",
+        "The closing message names the skills that read docs/agents/*.md and says a rerun is only needed to switch trackers or restart"
+      ],
+      "baseline": "Without the skill the agent wrote AGENTS.md (project facts, commands, a .scratch/ work-item convention it inferred, a test-first workflow), a CLAUDE.md containing only @AGENTS.md, a .gitignore, and a first test file, all without asking anything. It never proposed local markdown as a tracker, wrote nothing under docs/agents/, did not ask which instruction file to create, and did not mention triage or the skills that consume docs/agents/*.md.",
+      "runs": [
+        {
+          "date": "2026-10-06",
+          "host": "Claude Code",
+          "model": "claude-fable-5-1",
+          "result": "pass",
+          "notes": "Skipped, not judgeable here: \"The agent asks no triage-label question and states that Section B is skipped because triage is not installed\" and \"The drafted ## Agent skills block has no ### Triage labels sub-block and no docs/agents/triage-labels.md is written\" - triage is installed user-wide in this environment and cannot be removed for one run; the agent correctly detected it in ~/.agents/skills, asked the one triage question, and wrote triage-labels.md. The four judgeable expectations held: local markdown led Section A, the agent asked AGENTS.md or CLAUDE.md (recommending AGENTS.md) in the same message as the draft and before writing, issue-tracker.md is byte-identical to the local-markdown template, and the closing report named the consumers and the rerun condition."
+        }
+      ]
+    },
+    {
+      "id": 3,
+      "prompt": "setup-software-engineering-skills",
+      "files": [
+        "evals/files/AGENTS.md"
+      ],
+      "expected_output": "In a repository whose remote is an Azure DevOps project, where az is installed but not logged in and AGENTS.md already carries an ## Agent skills block, the agent runs discovery, reports the failed lookups and the unverified types, states, and relations, asks for authentication or scope, and after the user explicitly accepts the gaps writes a contract that labels them unverified and blocks the dependent operations, updating the existing block in place.",
+      "expectations": [
+        "The agent attempts the project and work-item-type queries from the Azure DevOps reference before drafting",
+        "The agent names which types, states, fields, and relationships remain unverified and asks the user to authenticate or supply the organization and project",
+        "The agent does not treat an Agile template or a repository document as proof of the project's types or states",
+        "Only after the user explicitly accepts the gaps does the draft proceed, and each accepted gap records its reason, the lookup that resolves it, and the operations it blocks",
+        "No executable command in docs/agents/issue-tracker.md contains an unresolved type, state, or scope placeholder; unverified values appear as labelled gaps",
+        "The ## Agent skills block in AGENTS.md is replaced in place, the Build and Deployment sections are unchanged, and no second ## Agent skills block exists",
+        "The contract includes the Markdown storage convention and the Tick an acceptance criterion operation; it names the verified criteria field, or records the field lookup as a gap and blocks the operation until discovery succeeds"
+      ],
+      "baseline": "Without the skill the agent read the remote and AGENTS.md, noticed the GitHub/Azure DevOps mismatch, and asked which tracker and whether to create the docs; it never ran any az devops project or work-item-type query. After the answer it rewrote the ## Agent skills block (adding six skill sub-sections of its own invention), wrote an issue-tracker.md with az boards commands that still contain a raw <type> placeholder, and listed the process template and criteria field under an Unverified heading without blocking the dependent operations, recording recovery lookups, or including the Markdown storage convention and a Tick an acceptance criterion operation. It wrote without explicit user acceptance of the gaps and asked nobody to authenticate.",
+      "runs": [
+        {
+          "date": "2026-10-06",
+          "host": "Claude Code",
+          "model": "claude-opus-5-5",
+          "result": "fail",
+          "notes": "Judged from the recorded draft of an interrupted run; the agent stopped at the approval step because it would not accept an agent-relayed approval, so nothing was written. Skipped, not judgeable: \"The ## Agent skills block in AGENTS.md is replaced in place, the Build and Deployment sections are unchanged, and no second ## Agent skills block exists\" (the draft only states that intent). Failed: \"The agent attempts the project and work-item-type queries from the Azure DevOps reference before drafting\" - it ran az devops project show, got the unauthenticated refusal, and went straight to the failed-discovery procedure without attempting the work-item-type query. \"No executable command in docs/agents/issue-tracker.md contains an unresolved type, state, or scope placeholder; unverified values appear as labelled gaps\" - no raw placeholders remain, but the unverified Agile values sit inside executable commands (--type \"User Story\"/\"Bug\"/\"Feature\", --state \"Closed\", WIQL NOT IN ('Closed', 'Removed')), marked blocked or unverified only in surrounding prose. \"The contract includes the Markdown storage convention and the Tick an acceptance criterion operation; it names the verified criteria field, or records the field lookup as a gap and blocks the operation until discovery succeeds\" - Markdown storage and Tick are present, and the gap table lists the criteria-field choice, but Tick names the unverified AcceptanceCriteria/Description fields with a ready command and is not marked blocked. Held: it named every unverified type, state, field, relation, and policy and offered authentication; it used the Agile process only as proposed, labelled mappings; it drafted only after the gaps were accepted, with a gap table of reason, recovery lookup, and affected operations. It also described triage-labels.md and domain.md by reference instead of showing their contents."
+        }
+      ]
+    },
+    {
+      "id": 4,
+      "prompt": "Run setup-software-engineering-skills here. Keep the default triage labels and show me the draft before writing.",
+      "files": [
+        "evals/files/gitlab/AGENTS.md",
+        "evals/files/gitlab/CONTEXT-MAP.md"
+      ],
+      "expected_output": "In a repository whose remote is a GitLab project, with glab authenticated, triage and model-routing installed, an AGENTS.md that already carries a model-routing instruction outside any Agent skills block, and a root CONTEXT-MAP.md naming contexts under packages/, the agent settles multi-context without asking, keeps the existing routing instruction in place with no second pointer, resolves the merge method before drafting, and writes the GitLab contract with consistent wayfinding operations.",
+      "expectations": [
+        "Section C is settled as multi-context from the existing CONTEXT-MAP.md without a question",
+        "The existing model-routing instruction in AGENTS.md stays where it is and the drafted ## Agent skills block has no ### Model routing sub-block",
+        "Before showing the draft, the agent resolves merge_method from glab api projects/:id, or reports the failed lookup and proceeds only when the user accepts a labelled gap with the merge operations blocked",
+        "docs/agents/triage-labels.md ends with the instruction to edit the Label in this tracker column",
+        "docs/agents/domain.md names <context>/docs/adr/ beside each context's CONTEXT.md rather than a fixed src/ path",
+        "The GitLab frontier query filters state=opened, paginates, and drops tickets with a link_type is_blocked_by link to an open issue; the fallback Blocked by line sits after the Part of and Wayfinding order lines",
+        "The final report names each written file with its consumers, any verification gap, and when to rerun setup"
+      ],
+      "baseline": "Without the skill the agent read the remote, AGENTS.md, and CONTEXT-MAP.md, then drafted four new AGENTS.md sections (Work tracking, a GitLab scoped-label table of its own invention, an Engineering workflow, Domain model) and asked three questions before writing them. It never ran a glab merge_method lookup or reported one as a gap, wrote nothing under docs/agents/ (no issue-tracker.md, triage-labels.md, or domain.md, so no wayfinding operations or frontier query), used labels unrelated to the seven canonical roles, and gave no closing report of files with consumers or when to rerun; it did leave the existing model-routing section untouched and treated the repo as multi-context without asking.",
+      "runs": [
+        {
+          "date": "2026-10-06",
+          "host": "Claude Code",
+          "model": "claude-opus-5-5",
+          "result": "pass",
+          "notes": "Judged from the recorded draft of an interrupted run; the agent stopped at the approval step because it would not accept an agent-relayed approval, so nothing was written. glab is not installed here and the fixture project does not exist, so the merge_method lookup could not succeed. Skipped, not judgeable: \"The final report names each written file with its consumers, any verification gap, and when to rerun setup\" (no write, no report). The six judgeable expectations held on the draft: Section C settled as multi-context from CONTEXT-MAP.md without a question; the existing ## Model routing section stays and the drafted block has no ### Model routing sub-block; the agent reported the failed merge_method lookup (glab missing, API 404, ls-remote denied) before drafting and drafted only after the user accepted it as a labelled gap, with Complete with a rebase merge marked BLOCKED; triage-labels.md ends with the edit-the-column instruction; domain.md names packages/<context>/docs/adr/ beside each CONTEXT.md; the frontier query uses --paginate and state=opened, drops is_blocked_by links to open issues, and the Blocked by fallback follows the Part of and Wayfinding order lines."
+        }
+      ]
+    }
+  ]
+}

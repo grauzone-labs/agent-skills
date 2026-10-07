@@ -1,5 +1,17 @@
 # Issue tracker: Azure DevOps
 
+## Table of contents
+
+- [Setup and scope](#setup-and-scope)
+- [Discover the project's process during setup](#discover-the-projects-process-during-setup)
+- [Markdown storage for multiline text](#markdown-storage-for-multiline-text)
+- [Work item operations for the generated contract](#work-item-operations-for-the-generated-contract)
+- [Implementation operations for the generated contract](#implementation-operations-for-the-generated-contract)
+- [Pull requests as a triage surface](#pull-requests-as-a-triage-surface)
+- [When a skill says "publish to the issue tracker"](#when-a-skill-says-publish-to-the-issue-tracker)
+- [When a skill says "fetch the relevant ticket"](#when-a-skill-says-fetch-the-relevant-ticket)
+- [Wayfinding operations](#wayfinding-operations)
+
 Setup reference for generating `docs/agents/issue-tracker.md` for Azure Boards. Run process discovery, settle the applicable workflow mappings, then draft the repository's tracker contract. The operation examples below are templates for that output. Use the Azure CLI with the `azure-devops` extension; use authenticated REST calls when an operation has no supported CLI route.
 
 ## Setup and scope
@@ -64,7 +76,7 @@ Use `az devops invoke` where its resource routing supports these endpoints. Exte
 
 ### Failed or incomplete discovery
 
-If authentication is missing or an authenticated query fails, report the failed lookup and explicitly identify unverified types, states, fields, or relationships. Preserve successfully retrieved evidence and its scope. Ask for missing project details or for the user to authenticate and repeat the lookup. Use general templates and repository documents only as proposed conventions, never as proof of current project types, states, or hierarchy.
+If authentication is missing or an authenticated query fails, attempt the remaining lookups of steps 1 and 2, report each failed lookup with its cause, and explicitly identify unverified types, states, fields, or relationships. Preserve successfully retrieved evidence and its scope. Ask for missing project details or for the user to authenticate and repeat the lookup. Use general templates and repository documents only as proposed conventions, never as proof of current project types, states, or hierarchy.
 
 Before preparing the final draft, either complete verification or obtain the user's explicit agreement to document the remaining gaps as `unverified`. For each accepted gap, record the reason, proposed mapping if supplied, affected operations, and the authenticated lookup needed to resolve it. Leave dependent create, transition, or relation operations blocked. Draft approval permits writing the configuration, not executing those blocked operations. An unavailable endpoint is a verification gap, not evidence that a type or relation is absent.
 
@@ -86,7 +98,7 @@ Write concrete findings into `docs/agents/issue-tracker.md`, rather than copying
 - For each selected type, title/content field references, unconditional required fields, defaults, conditional requirements, and whether values are author-supplied or server-managed.
 - Initial states and completed-state mappings per type, based on `Completed` categories. Document any other terminal-state policy explicitly. A single `<issue-type>` or `<done-state>` is insufficient when workflows use different types.
 - Approved hierarchy, dependency relations, team Bug behavior when relevant, and Test Plans operations for test-management types.
-- Triage role-to-tag mappings when `triage` is installed, coordinated with `docs/agents/triage-labels.md`. Treat Azure Boards tags as separate from workflow states; record whether defaults or existing project-specific tags were selected. Reference this authoritative mapping from the labels document instead of maintaining conflicting copies.
+- A pointer to `docs/agents/triage-labels.md` when `triage` is installed; that file owns the role-to-tag mappings. Treat Azure Boards tags as separate from workflow states.
 - Evidence source, inspection date, and verification status for each mapping or unresolved dependency. Distinguish completed delivery from removal, rejection, and resolution awaiting verification in the completion rules.
 - English authoring templates and scoped creation/update examples that supply the required author input and preserve process-managed values.
 
@@ -102,7 +114,7 @@ For each selected work item type, group its authoring template under one heading
 
 For native Test Plans fields, use their supported structured payloads for steps and parameters and Markdown for accompanying narrative. Select parent relationships from verified hierarchy and team settings rather than assuming the standard Agile hierarchy.
 
-**Complete when** the user has approved the complete contract, including type roles, field requirements, hierarchy, state mappings, triage tags when applicable, and completion rules. Scope/type/state values used in executable examples are confirmed. Explicitly accepted unverified mappings have a reason, recovery lookup, and blocked dependent operations. When `wayfinder` is absent, document deferred selection as a prerequisite rather than generating a map creation command with an unresolved type.
+**Complete when** the user has approved the complete contract, including type roles, field requirements, hierarchy, state mappings, triage tags when applicable, and completion rules. Scope/type/state values used in executable examples are confirmed. Explicitly accepted unverified mappings have a reason, recovery lookup, and blocked dependent operations, each written as a prose line naming the gap instead of a command. When `wayfinder` is absent, document deferred selection as a prerequisite rather than generating a map creation command with an unresolved type.
 
 ## Markdown storage for multiline text
 
@@ -145,6 +157,7 @@ Used by the `implement-work-item` skill. During setup, record the Azure Repos re
 - **Blocking dependencies**: `az boards work-item show --id <work-item-id> --expand relations --query "relations[?rel=='System.LinkTypes.Dependency-Reverse'].url" -o tsv` lists the work item's Predecessor links; the number that ends each URL is the blocking work item's ID. `System.LinkTypes.Dependency-Reverse` is the system-defined Predecessor reference name; confirm it against the relation metadata recorded during discovery. The same query with `System.LinkTypes.Hierarchy-Reverse` returns the Parent link.
 - **Merged implementation of a dependency**: read the blocker's relations whose `rel` is `ArtifactLink` and whose `attributes.name` is `Pull Request`; each artifact URL ends in a pull request ID. Then run `az repos pr show --id <pr-id> --query '{status:status,target:targetRefName,merge:lastMergeCommit.commitId}'`. The implementation is merged when `status` is `completed` and `target` is the target branch. A blocker in a completed state without such a pull request is unverified.
 - **Commit references**: `#<work-item-id>` in a commit message links the commit to the work item when commit mention linking is enabled for the repository.
+- **Tick an acceptance criterion**: read the field that holds the criteria, `Microsoft.VSTS.Common.AcceptanceCriteria` where the process has it and the Description otherwise, change the criterion's `- [ ]` to `- [x]`, and write the whole field back with `az boards work-item update --id <work-item-id> --fields "<field>=<Markdown source>"`. Follow **Markdown storage for multiline text** and read the field back to verify. Record during setup which field holds the criteria; when that field is unverified, mark this operation blocked, with the field lookup as its recovery.
 - **List open pull requests**: `az repos pr list --repository "<repository>" --target-branch "<target-branch>" --status active`.
 - **Open a pull request**: `az repos pr create --repository "<repository>" --source-branch "<work-branch>" --target-branch "<target-branch>" --title "..." --description "<Markdown source>" --work-items <work-item-id>`. `--work-items` creates the closing link. Leave `--auto-complete` unset; the user's go completes the pull request. The description holds up to 4000 characters.
 - **Read checks and reviews**: `az repos pr policy list --id <pr-id>` returns each branch policy evaluation with its `status` and whether its configuration is blocking. `az repos pr reviewer list --id <pr-id>` returns the votes: `10` approved, `5` approved with suggestions, `0` no vote, `-5` waiting for author, `-10` rejected. Read review comments through the Pull Request Threads REST resource.
@@ -230,9 +243,9 @@ Record the selected type and its reference name, required author inputs, initial
   ```
 
   If hierarchy links are unavailable in the selected process, put `Part of #<map-id>` above `Wayfinding order: <NN>` at the top of the child description. Query those markers to find the map's tickets. Once claimed, assign the ticket to the driving developer.
-- **Blocking**: use the process's native predecessor/dependency relation rather than a text-only convention. First discover the relation name the organization exposes with `az boards work-item relation list-type`, then add the relation to represent “child is blocked by blocker”. Confirm its direction from the returned relation metadata before writing it. If dependency links are unavailable, put `Blocked by: #<id>, #<id>` at the top of the child description. A ticket is unblocked only when every blocker is in its configured done state.
-- **Frontier query**: query the map's open children by parent relation (or the fallback `Part of #<map-id>` text), then drop tickets that have an open dependency/predecessor or a non-empty `System.AssignedTo`. Sort the remainder by `Wayfinding order` ascending; the lowest number wins.
+- **Blocking**: use the process's native predecessor/dependency relation rather than a text-only convention. First discover the relation name the organization exposes with `az boards work-item relation list-type`, then add the relation to represent "child is blocked by blocker". Confirm its direction from the returned relation metadata before writing it. If dependency links are unavailable, put `Blocked by: #<id>, #<id>` after the child's relationship and order markers. A ticket is unblocked only when every blocker is in its mapped completed state.
+- **Frontier query**: query the map's open children by parent relation (or the fallback `Part of #<map-id>` text), then drop tickets with a blocker outside its mapped completed state (from native dependency/predecessor links or the fallback `Blocked by` line) or a non-empty `System.AssignedTo`. Sort the remainder by `Wayfinding order` ascending; the lowest number wins.
 - **Claim**: `az boards work-item update --id <id> --assigned-to "<current developer>"` - the session's first write.
-- **Resolve**: `az boards work-item update --id <id> --discussion "<answer>" --state "<completed-state>"`, using the child type's state and required transition inputs. Then append the answer's artifact and link to the map's Decisions so far.
+- **Resolve**: `az boards work-item update --id <id> --discussion "<answer>" --state "<completed-state>"`, using the child type's state and required transition inputs. Then append its index line (the ticket's name linked, then a one-line gist) to the map's Decisions so far.
 
 When generating commands, use the selected map type and independently mapped child type, including their required author inputs and completed states. Check assignment defaults: a process can assign the creator automatically. Establish unclaimed tickets by clearing assignment when allowed, or agree on another claim marker and adapt the frontier filter before using it.
