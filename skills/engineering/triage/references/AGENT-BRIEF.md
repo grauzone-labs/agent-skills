@@ -1,6 +1,12 @@
 # Writing agent briefs
 
-An agent brief is a structured comment posted on a GitHub issue or PR when it moves to `ready-for-agent`. It is the authoritative specification that an AFK agent will work from. The original body and discussion are context - the agent brief is the contract.
+## Table of contents
+
+- [Principles](#principles)
+- [Template](#template)
+- [Examples](#examples)
+
+An agent brief is a structured comment posted on the issue or PR when it moves to `ready-for-agent`. It is the authoritative specification that an AFK agent will work from. The original body and discussion are context - the agent brief is the contract.
 
 The brief states **what the agent should do**, which stretches to both surfaces: for an issue, that's building the change from nothing; for a PR, it's what's left to do *to the existing diff* - finish it, close gaps, address review points. Same principles either way; the PR example below shows the difference.
 
@@ -8,17 +14,12 @@ The brief states **what the agent should do**, which stretches to both surfaces:
 
 ### Durability over precision
 
-The issue may sit in `ready-for-agent` for days or weeks. The codebase will change in the meantime. Write the brief so it stays useful even as files are renamed, moved, or refactored.
-
-- **Do** describe interfaces, types, and behavioral contracts
-- **Do** name specific types, function signatures, or config shapes that the agent should look for or modify
-- **Don't** reference file paths - they go stale
-- **Don't** reference line numbers
-- **Don't** assume the current implementation structure will remain the same
+- Describe interfaces, types, and behavioral contracts.
+- Name the specific types, function signatures, or config shapes the agent should look for or modify - the handles that survive a rename - rather than source-file paths, line numbers, or the current implementation structure. A path that is part of the requested behavior, such as `.out-of-scope/`, belongs in the contract.
 
 ### Behavioral, not procedural
 
-Describe **what** the system should do, not **how** to implement it. The agent will explore the codebase fresh and make its own implementation decisions.
+Describe **what** the system should do, not **how** to implement it.
 
 - **Good:** "The `SkillConfig` type should accept an optional `schedule` field of type `CronExpression`"
 - **Bad:** "Open src/types/skill.ts and add a schedule field on line 42"
@@ -27,14 +28,14 @@ Describe **what** the system should do, not **how** to implement it. The agent w
 
 ### Complete acceptance criteria
 
-The agent needs to know when it's done. Every agent brief must have concrete, testable acceptance criteria. Each criterion should be independently verifiable.
+Every agent brief carries concrete, testable acceptance criteria, each independently verifiable.
 
 - **Good:** "Running `gh issue list --label needs-triage` returns issues that have been through initial classification"
 - **Bad:** "Triage should work correctly"
 
 ### Explicit scope boundaries
 
-State what is out of scope. This prevents the agent from gold-plating or making assumptions about adjacent features.
+State what is out of scope, naming the adjacent features that stay untouched.
 
 ## Template
 
@@ -87,8 +88,8 @@ When a skill description exceeds 1024 characters, it is truncated at exactly
 that end mid-word (e.g. "Use when the user wants to confi").
 
 **Desired behavior:**
-Truncation should break at the last word boundary before 1024 characters
-and append "..." to indicate truncation.
+Truncation should break at the last word boundary that leaves room for an
+appended "..." within 1024 characters.
 
 **Key interfaces:**
 - The `SkillMetadata` type's `description` field - no type change needed,
@@ -97,9 +98,9 @@ and append "..." to indicate truncation.
 - Any function that reads SKILL.md frontmatter and extracts the description
 
 **Acceptance criteria:**
-- [ ] Descriptions under 1024 chars are unchanged
+- [ ] Descriptions of at most 1024 chars are unchanged
 - [ ] Descriptions over 1024 chars are truncated at the last word boundary
-      before 1024 chars
+      that fits with "..." in 1024 chars
 - [ ] Truncated descriptions end with "..."
 - [ ] The total length including "..." does not exceed 1024 chars
 
@@ -132,13 +133,13 @@ checked for matches.
 
 **Key interfaces:**
 - Markdown file format in `.out-of-scope/` - each file should have a
-  `# Concept Name` heading, a `**Decision:**` line, a `**Reason:**` line,
-  and a `**Prior requests:**` list with issue links
+  `# Concept name` heading, a one-line decision, a `## Why this is out of
+  scope` section, and a `## Prior requests` list with issue links
 - The triage workflow should read all `.out-of-scope/*.md` files early
   and match incoming issues against them by concept similarity
 
 **Acceptance criteria:**
-- [ ] Closing a feature as wontfix creates/updates a file in `.out-of-scope/`
+- [ ] Rejecting an enhancement as wontfix creates/updates a file in `.out-of-scope/`
 - [ ] The file includes the decision, reasoning, and link to the closed issue
 - [ ] If a matching `.out-of-scope/` file already exists, the new issue is
       appended to its "Prior requests" list rather than creating a duplicate
@@ -177,7 +178,7 @@ is untouched when the flag is absent.
 **Key interfaces:**
 - The command's error path should emit `{ "error": string }` under `--json`
   instead of the plain-text error
-- Reuse the existing serializer the PR already added; don't introduce a second
+- Success output keeps the JSON schema established by the PR
 
 **Acceptance criteria:**
 - [ ] `triage list --json` emits valid JSON for both success and error cases

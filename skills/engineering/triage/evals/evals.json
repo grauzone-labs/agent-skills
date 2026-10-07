@@ -1,0 +1,101 @@
+{
+  "skill_name": "triage",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "triage: show me anything that needs my attention",
+      "files": [
+        "evals/files/triage-labels.md"
+      ],
+      "expected_output": "In a GitHub repository whose docs/agents/issue-tracker.md sets PRs as a request surface to yes, with the fixture placed as docs/agents/triage-labels.md, the agent lists the unlabeled, needs-triage, and needs-info items with reporter replies with external PRs tagged, and waits for the maintainer to pick one.",
+      "expectations": [
+        "The agent reads docs/agents/issue-tracker.md and docs/agents/triage-labels.md before querying the tracker",
+        "The tracker queries use the mapped labels from the fixture (status: triage, status: waiting), not the canonical role names",
+        "The output shows three bucket headings with counts: unlabeled, needs-triage, and needs-info with reporter activity since the last triage notes, each oldest first",
+        "Each item is one line in the format number, [issue] or [PR], age, one-line summary",
+        "Only PRs by external authors appear; a collaborator's open PR is left out",
+        "The agent ends by asking which item to take and changes nothing in the tracker",
+        "An item with only unrelated labels appears under Unlabeled; closed items and needs-info items without a reporter reply are left out"
+      ],
+      "baseline": "Without the skill the agent queried the tracker with gh (open and closed issues, PRs with author_association, labels, origin/main) and returned a broad audit under its own headings: an 'immediately look at' section mixing tracker-consistency findings (issue #1 closed while PR #2 is unmerged, bugs reported against code not on main, housekeeping issues closed without matching files) with per-item advice, a table of reporter issues with its own assessment and label suggestions, and a proposed order of work instead of asking which item to take. It did not show the three buckets with counts or the one-line item format, listed needs-info #15 (no reporter reply) in the same table as #14, and put the owner's own unlabeled issues under a separate heading with dependency advice; it did recognise PR #18 as external and PR #2 as the owner's, and changed nothing in the tracker.",
+      "runs": [
+        {
+          "date": "2026-10-06",
+          "host": "Claude Code",
+          "model": "claude-fable-5-1",
+          "result": "pass",
+          "notes": "The Skill tool refuses triage for subagents (disable-model-invocation), so the subagent was told to Read SKILL.md and follow it. All seven expectations held: it read issue-tracker.md and triage-labels.md first, queried with the mapped status: triage / status: waiting labels, showed Unlabeled (8, incl. accessibility-only #13 and external PR #18), needs-triage (1), needs-info with reporter activity (1, #14 whose reporter replied after the notes) in code blocks oldest first with number, [issue]/[PR], age, and title per line, left out owner PR #2, closed #16, and #15 without a reply, changed nothing, and asked which item to take. Observation: ages were minutes because every fixture was created the same day."
+        },
+        {
+          "date": "2026-10-06",
+          "host": "Codex",
+          "model": "gpt-6-astra",
+          "result": "pass",
+          "notes": "Run with -c sandbox_workspace_write.network_access=true added to the prescribed command: an earlier attempt without it could not reach api.github.com because Codex's workspace-write sandbox has no network. Codex located model-routing's SKILL.md while searching for the skill but did not read it. All seven expectations held: it read ~/.agents/skills/triage/SKILL.md, then issue-tracker.md and triage-labels.md before any query, listed open PRs and issues with gh api including author_association, read the comments of #14 and #15, showed Unlabeled (8, incl. accessibility-only #13 and external PR #18), Needs triage (1), Needs info, reporter replied (1, #14) oldest first with number, [issue]/[PR], age, and title per item, left out owner PR #2, closed #16, and #15, changed nothing, and asked which item to take. Observation: items were rendered as linked bullets rather than the plain code-block lines of SKILL.md."
+        },
+        {
+          "date": "2026-10-06",
+          "host": "OpenCode",
+          "model": "gpt-6-astra",
+          "result": "pass",
+          "notes": "OpenCode loaded model-routing before triage on its own despite the prompt's instruction, but kept gpt-6-astra and did not delegate. All seven expectations held: it read issue-tracker.md and triage-labels.md before any query, listed external PRs through gh api filtered by author_association and open issues separately, read the comments of #14 and #15 to compare reporter replies with the triage notes, showed Unlabeled (8), Needs triage (1), Needs info with reporter activity (1) oldest first with number, [issue]/[PR], age, and title per item, left out owner PR #2, closed #16, and #15, changed nothing, and ended with 'Which item would you like to take?'. Observations: ages were rendered as '<1d' for every item, and the items were bullets rather than the plain code-block lines of SKILL.md."
+        }
+      ]
+    },
+    {
+      "id": 2,
+      "prompt": "triage: let's look at #87",
+      "files": [
+        "evals/files/out-of-scope/dark-mode.md",
+        "evals/files/triage-labels.md"
+      ],
+      "expected_output": "With the fixtures placed as .out-of-scope/dark-mode.md and docs/agents/triage-labels.md, and #87 an unlabeled issue titled 'Night theme for accessibility', the agent surfaces the prior rejection, searches the codebase for existing theming, recommends enhancement / wontfix in the recommendation template, and on the maintainer's confirmation appends #87 to the file, comments with the disclaimer, applies the mapped labels, and closes.",
+      "expectations": [
+        "The agent reads the full issue, every .out-of-scope/*.md file, and reports where in the codebase it searched for an existing theming implementation",
+        "The agent surfaces .out-of-scope/dark-mode.md as a match by concept, quotes its reason, and asks whether the maintainer still feels the same way",
+        "The recommendation uses the step 3 template with the Recommendation, Why, Verification, Codebase, and Prior rejection lines, and the agent waits before changing anything",
+        "After the maintainer confirms, #87 is appended to the Prior requests list of .out-of-scope/dark-mode.md and no new file is created",
+        "The closing comment starts with the disclaimer line and links to .out-of-scope/dark-mode.md",
+        "The issue is closed carrying type: feature and status: declined as its only category and state labels, with its other labels untouched",
+        "The recommendation's Verification line is not applicable (nothing to reproduce) and no grilling round is run"
+      ],
+      "baseline": "Run against the dedicated repository grauzone-dev/skill-evals-triage, where the fixture issue is #19 (GitHub assigns numbers, so the prompt said #19 instead of #87). Without the skill the agent read the issue, src/greet.js, the tracker contract, the label table, and .out-of-scope/dark-mode.md, then acted on its own authority: it applied type: feature, status: declined, and an extra accessibility label, posted a closing comment without the disclaimer line (a friendly explanation that the library emits plain strings and theming belongs to the consumer), and closed the issue as not planned, reporting afterwards. It never showed a recommendation or asked whether the maintainer still stood by the prior rejection, did not append #19 to the file's Prior requests list, did not report where it searched for theming, and flagged the file's #42 reference as orphaned.",
+      "runs": [
+        {
+          "date": "2026-10-06",
+          "host": "Claude Code",
+          "model": "claude-fable-5-1",
+          "result": "fail",
+          "notes": "Run against grauzone-dev/skill-evals-triage issue #19 (prompt said #19 instead of #87); the subagent read SKILL.md via Read because the Skill tool refuses disable-model-invocation skills for subagents, and the orchestrator answered as the maintainer. Six expectations held: it read the issue, both references, and the only .out-of-scope file, reported the redundancy search (theme|palette|color|style|dark|night|ansi|chalk|tty over src, test, package.json, README: no hit), surfaced dark-mode.md as a concept match, quoted its reason, asked 'Siehst du das noch genauso?', showed the five-line recommendation (enhancement / wontfix) and waited; after confirmation it appended '#19 - Night theme for accessibility' to Prior requests without creating a file, posted the closing comment starting with the disclaimer and linking .out-of-scope/dark-mode.md, applied type: feature and status: declined as the only labels, closed the issue, and ran no grilling round. Failed: 'The recommendation's Verification line is not applicable (nothing to reproduce)': the line read 'not reproduced - src/greet.js returns an unformatted string, no palette, no styling', because the agent checked the reporter's description of the current behavior against the codebase per step 2's enhancement rule and found it did not match. Observations: the checklist was copied into the reply (no task list tool for subagents), it offered to also correct the file's stale ThemeConfig sentence (declined), and committed the append locally without pushing, flagging the link as pending."
+        }
+      ]
+    },
+    {
+      "id": 3,
+      "prompt": "triage: move #17 to ready-for-agent",
+      "files": [
+        "evals/files/triage-labels.md"
+      ],
+      "expected_output": "With the fixture placed as docs/agents/triage-labels.md and #17 an issue labelled status: triage with no category label, the agent asks for the category, confirms the label change before applying it, skips grilling, offers an agent brief, and when accepted posts a brief that follows the template.",
+      "expectations": [
+        "The agent asks whether #17 is a bug or an enhancement before applying any label",
+        "The agent states the planned label changes and waits for confirmation before touching the tracker",
+        "No grilling round is run",
+        "The agent asks whether to write an agent brief instead of posting one unprompted",
+        "The posted brief starts with the disclaimer line and carries the Category, Summary, Current behavior, Desired behavior, Key interfaces, Acceptance criteria, and Out of scope sections",
+        "The brief names types, signatures, or behaviors and contains no source-file path or line number; a path that is part of the requested behavior is allowed",
+        "The issue ends with its agreed category and status: agent-ready as its only category and state labels, status: triage removed and its other labels untouched"
+      ],
+      "baseline": "Run against grauzone-dev/skill-evals-triage issue #17 (status: triage, no category); the orchestrator answered as the maintainer. Without the skill the agent read the issue and the code, found that greet takes no hour on any branch, and stopped with three options (agent-ready after deciding the behavior, waiting with a reporter question, or declined) instead of asking for the category; after the maintainer chose agent-ready and named the behavior it applied type: bug and status: agent-ready and removed status: triage. It never asked whether to write an agent brief: it posted an unprompted spec comment without the disclaimer line and without the brief template's Category, Summary, Current behavior, Desired behavior, Key interfaces, and Out of scope sections (only a decided behavior and acceptance criteria), and on its own added a native blocked_by dependency on #3.",
+      "runs": [
+        {
+          "date": "2026-10-07",
+          "host": "Claude Code",
+          "model": "claude-opus-5-5",
+          "result": "pass",
+          "notes": "Run against grauzone-dev/skill-evals-triage issue #17 (status: triage, no category); recorded from an earlier orchestrator's finished run after checking that the issue's labels and posted comment still match the saved brief. The Skill tool refused triage for the subagent (disable-model-invocation), so it read ~/.agents/skills/triage/SKILL.md and AGENT-BRIEF.md and followed them; the orchestrator answered as the maintainer. All seven expectations held: before touching the tracker it asked whether #17 is a bug or an enhancement, stated the planned changes (add the category, remove status: triage, add status: agent-ready, leave other labels, no close) and asked whether to write an agent brief, together with the two facts the brief lacked (behavior for hour 24, scope relative to #3), as SKILL.md line 128 allows, with no grilling round; after confirmation it posted a brief starting with the disclaimer line and carrying Category, Summary, Current behavior, Desired behavior, Key interfaces, Acceptance criteria, and Out of scope, naming greet(name, hour) and RangeError with no source path or line number, and left #17 open with type: bug and status: agent-ready as its only labels. Observations: it flagged that src/greet.js takes no hour, so the report does not match the code, and noted in its reply (not as a native dependency) that #3 must land first; the brief's Current behavior restates the reporter's claim about a parameter that does not exist yet."
+        }
+      ]
+    }
+  ]
+}
