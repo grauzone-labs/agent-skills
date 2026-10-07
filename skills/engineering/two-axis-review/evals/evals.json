@@ -1,0 +1,90 @@
+{
+  "skill_name": "two-axis-review",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "two-axis-review",
+      "files": [],
+      "expected_output": "In a repository whose feature branch has three commits, one of which references #12 in its body only, a CONTRIBUTING.md, an uncommitted edit, and one untracked file, and whose docs/agents/issue-tracker.md describes how to fetch issues, the agent asks for the fixed point, the user answers main, and the agent returns separate Standards and Spec reports built from parallel sub-agents.",
+      "expectations": [
+        "The agent asks for the fixed point before running any git command that needs it",
+        "The agent confirms main as a commit with git rev-parse --verify and captures the merge base with git merge-base main HEAD",
+        "The change set includes the uncommitted edit and the untracked file, the latter reviewed as an added file",
+        "Issue #12 is found in the commit body, fetched by the tracker contract in docs/agents/issue-tracker.md, and used as the spec",
+        "CONTRIBUTING.md and the full text of references/smells.md are passed to the Standards sub-agent",
+        "The Standards and Spec sub-agents run in parallel, each with the change-set commands and the full commit messages",
+        "The output has a ## Standards section, a ## Spec section, and one summary line naming the findings count and worst issue per axis, with no ranking across axes"
+      ],
+      "baseline": "Without the skill the agent never asked for the fixed point: it picked main itself, never ran git rev-parse --verify or git merge-base, and assembled the change set from git diff main...HEAD plus git diff plus git status (so the uncommitted edit and the untracked file were covered, but by three ad-hoc commands). It found #12 in the commit body and the tracker contract on its own, fetched the issue with ./scripts/issue 12, and spawned one Standards and one Spec sub-agent in parallel with its own briefs and no smell baseline; the background hand-off failed, so it wrote both axes itself from its own reading. The output used Axis 1 / Axis 2 pass-fail tables with merge verdicts and suggested fixes instead of a ## Standards section, a ## Spec section, and one summary line.",
+      "runs": [
+        {
+          "date": "2026-10-06",
+          "host": "Claude Code",
+          "model": "claude-fable-5-1",
+          "result": "pass",
+          "notes": ""
+        },
+        {
+          "date": "2026-10-06",
+          "host": "Codex",
+          "model": "gpt-6-astra",
+          "result": "pass",
+          "notes": ""
+        },
+        {
+          "date": "2026-10-06",
+          "host": "OpenCode",
+          "model": "gpt-6-astra",
+          "result": "pass",
+          "notes": ""
+        }
+      ]
+    },
+    {
+      "id": 2,
+      "prompt": "two-axis-review HEAD~3 docs/specs/export.md",
+      "files": [],
+      "expected_output": "In a repository with no standards source, no issue references in the last three commits, and a spec at docs/specs/export.md that asks for a CSV export while the diff also adds a JSON export, the agent reviews against the smell baseline alone on the Standards axis and reports the JSON export as scope creep on the Spec axis.",
+      "expectations": [
+        "The fixed point HEAD~3 is confirmed as a commit with git rev-parse --verify and the merge base is captured once",
+        "docs/specs/export.md is used as the spec without asking the user where the spec is",
+        "The Standards sub-agent receives the full text of references/smells.md and labels every baseline finding a judgement call",
+        "The Spec report lists the JSON export as scope creep and quotes the CSV scope statement of the spec",
+        "Each sub-agent report stays under 400 words and the output follows the template of step 5"
+      ],
+      "baseline": "Without the skill the agent diffed HEAD~3 directly with git diff HEAD~3, never confirmed it with git rev-parse --verify and never captured a merge base; it took docs/specs/export.md from the argument without asking. It spawned a Standards and a Spec sub-agent in parallel, but the Standards brief carried no smell baseline and asked for blocker / should-fix / nit severities derived from the existing house style, so nothing was labelled a judgement call. The Spec axis did report the JSON export as out of scope with the spec's scope sentence quoted, and the amount-formatting and empty-array misses, but the reports were far over 400 words each, the Spec axis came first, and the result ended in a merged action list and a do-not-merge verdict instead of the step 5 template and its summary line.",
+      "runs": [
+        {
+          "date": "2026-10-06",
+          "host": "Claude Code",
+          "model": "claude-fable-5-1",
+          "result": "fail",
+          "notes": "\"The Standards sub-agent receives the full text of references/smells.md and labels every baseline finding a judgement call\": the full smells.md text was in the prompt, but the sub-agent labelled the duplicated q helper \"hard against the baseline, not just a style preference\" and the orchestrator's summary line repeated it as a hard violation. \"Each sub-agent report stays under 400 words and the output follows the template of step 5\": the Standards report came back at 494 words and the Spec report at 447 (467 and 420 after light cleaning); the ## Standards / ## Spec / summary-line template itself was followed. Also observed: the two sub-agents were spawned in two consecutive messages, so they ran one after the other rather than in parallel."
+        }
+      ]
+    },
+    {
+      "id": 3,
+      "prompt": "two-axis-review v1.2.0",
+      "files": [],
+      "expected_output": "In a repository with a CODING_STANDARDS.md, commits since v1.2.0 that reference no issue, no spec file under docs/, specs/, or .scratch/, and a user who answers that there is no spec, the agent runs the Standards axis alone and reports No spec available under the Spec heading.",
+      "expectations": [
+        "The agent searches docs/, specs/, and .scratch/ for a spec before asking the user",
+        "After the user says there is no spec, only the Standards sub-agent is spawned",
+        "The Standards sub-agent receives CODING_STANDARDS.md and the full text of references/smells.md",
+        "Findings that break CODING_STANDARDS.md cite the file and the rule and carry a hard violation or judgement call label",
+        "The ## Spec section reads No spec available and the summary line marks the Spec axis not reviewed"
+      ],
+      "baseline": "Without the skill the agent resolved v1.2.0 and diffed it against HEAD, but never searched docs/, specs/, or .scratch/ for a spec and never asked the user whether one exists; it substituted the commit messages, README.md, and docs/architecture.md as the 'originating intent' and ran a full second axis against them in its own sub-agent. The Standards sub-agent found the CODING_STANDARDS.md breaches (default export, magic numbers, missing JSDoc, swallowed error) with file, line, and rule number, but without the smell baseline and without hard violation or judgement call labels. The output used its own two-table format with a merge verdict instead of a ## Standards section, a ## Spec section reading No spec available, and a summary line marking the Spec axis not reviewed.",
+      "runs": [
+        {
+          "date": "2026-10-06",
+          "host": "Claude Code",
+          "model": "claude-fable-5-1",
+          "result": "pass",
+          "notes": "Observation, no expectation failed: the agent spawned the Standards sub-agent before asking the user about the spec (it searched docs/, specs/, .scratch/, found nothing, ran the Standards axis, and only then asked); after the user said there is no spec it spawned nothing further and closed the Spec axis as not reviewed. The Standards report came back at 465 words against the 400-word brief."
+        }
+      ]
+    }
+  ]
+}
