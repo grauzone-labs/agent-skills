@@ -1,0 +1,97 @@
+{
+  "skill_name": "grilling",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "Grill me on this plan.",
+      "files": [
+        "evals/files/plan.md",
+        "evals/files/service.py"
+      ],
+      "expected_output": "With the fixtures placed at the repository root as plan.md and service.py, the agent reads the plan and the API code before asking anything, builds a design tree from the open points, and opens with exactly one root question in the Q format with a recommended answer, then waits.",
+      "expectations": [
+        "The agent inspects the repository's API code in service.py before its first question",
+        "The first message contains exactly one question, formatted with the question emoji, a bold Q1 and title, and an arrow line with a recommended answer",
+        "The first question is one with no prerequisite among the plan's open points, such as the client identity to limit by, not the retry hint shown to the client",
+        "The agent waits for the user's answer instead of answering its own question or asking a second one"
+      ],
+      "baseline": "Without the skill, the agent read plan.md and service.py and then replied with an unprompted multi-section interrogation: it listed questions for every open point of the plan at once, grouped under headings, with no Q-numbering, no recommended answer per question, and no design tree ordering, so dependent points such as the retry hint were asked alongside their prerequisites. It did not wait for an answer to a single root question before asking the rest. Judged from the earlier orchestrator's finished run in /tmp/evalrun/grilling/1-baseline.",
+      "runs": [
+        {
+          "date": "2026-10-06",
+          "host": "Codex",
+          "model": "gpt-6-astra",
+          "result": "pass",
+          "notes": ""
+        },
+        {
+          "date": "2026-10-06",
+          "host": "OpenCode",
+          "model": "gpt-6-astra",
+          "result": "pass",
+          "notes": ""
+        },
+        {
+          "date": "2026-10-06",
+          "host": "Claude Code",
+          "model": "claude-opus-5-5",
+          "result": "pass",
+          "notes": "All four expectations held. Fresh run 2026-10-07 in /tmp/evalrun/grilling/1-claude (the earlier orchestrator's workspace held only the fixtures and no reply, so it could not be judged): the agent loaded grilling, read plan.md and service.py, listed what the code settles (every passing request has a client_id, INTERNAL_CLIENTS exists, responses carry no headers), built a design tree D1..D7 with prerequisites, and opened with one Q-format question, Q1 'limit by API key (client_id) or by remote IP', recommending per client_id, then stopped. Observation: in the same message it asked for the source of a deployment fact (instance count, Redis, gateway) that blocks D3, D2, D4 and D7, as SKILL.md line 25 prescribes; this is a fact request, not a second decision question."
+        }
+      ]
+    },
+    {
+      "id": 2,
+      "prompt": "I want to add caching to the product search endpoint but have not decided where it goes. Grill me until the design is settled.",
+      "files": [
+        "evals/files/service.py"
+      ],
+      "expected_output": "With the fixture placed at the repository root as service.py, the agent asks one numbered question at a time over several rounds, gathers facts about the endpoint and existing cache infrastructure from the repository itself, recomputes the frontier after each answer, and closes with a Settled design list that it asks the user to confirm before writing any code. During the exchange, choose a shared cache, and when asked to confirm, change it to a process-local cache.",
+      "expectations": [
+        "Every round carries exactly one question, numbered consecutively Q1, Q2, Q3 through the session",
+        "A question that depends on a fact in the repository, such as whether a cache client already exists, is answered by the agent reading the code, not by asking the user",
+        "A question whose answer depends on a still-open decision is asked only after that decision is settled",
+        "A fact the repository does not hold, such as the number of worker processes, is requested from the user and the decisions that depend on it stay open while independent branches continue",
+        "The changed answer at confirmation reopens the decisions that hang off the cache location, which are re-asked before a new confirmation request",
+        "The agent ends with a Settled design heading listing every decision and its answer, nested under the decision it depends on, and asks the user to confirm it",
+        "No implementation starts before the user confirms the settled design"
+      ],
+      "baseline": "Without the skill, the agent read service.py, noted the existing PRODUCT_CACHE and its update_price invalidation, and sketched an unordered list of open points, but its first reply asked three unnumbered questions at once (the problem being solved, caller dependence, staleness), with no recommended answer per question and no prerequisite structure; a second fresh run asked a single 'Frage 1' with a recommendation. After a relayed answer it did not move to the cache location but recommended adding a pg_trgm index instead of a cache, while also asking for a p95 target and the query distribution and previewing the instance-count and Redis facts in the same round, so rounds carried several questions and no Settled design was approached. Judged from the earlier orchestrator's finished runs for /tmp/evalrun/grilling/2-baseline.",
+      "runs": [
+        {
+          "date": "2026-10-07",
+          "host": "Claude Code",
+          "model": "claude-opus-5-5",
+          "result": "pass",
+          "notes": "Judged from the earlier orchestrator's finished run for /tmp/evalrun/grilling/2-claude (two rounds). Held: the agent loaded grilling, read service.py and settled the repository facts itself (PRODUCT_CACHE is an in-process dict, update_price is the only writer, no shared cache client exists); it built a design tree D1..D8 with prerequisites, put the dependent location decision D2 behind D1 and the missing fact F1 (process/host count, proxy or CDN), asked the user for F1's source, and opened with one Q-format question on the independent branch, Q1 staleness after a price change, recommending 'never'; nothing was implemented. Second round: the answer to Q1 arrived through SendMessage, so the host marked it as another agent's message; the agent declined to record it as the user's decision, logged 'checking with ops' as F1's source with D2 still open, and re-asked Q1 with the same number, which is consistent with one question per round and 'decisions are the user's'. Not reached in this protocol: 'The changed answer at confirmation reopens the decisions that hang off the cache location, which are re-asked before a new confirmation request' and 'The agent ends with a Settled design heading listing every decision and its answer, nested under the decision it depends on, and asks the user to confirm it'; neither could be judged."
+        }
+      ]
+    },
+    {
+      "id": 3,
+      "prompt": "Use the grilling and domain-modeling skills to settle how order cancellation after payment should work.",
+      "files": [
+        "evals/files/CONTEXT.md",
+        "evals/files/service.py"
+      ],
+      "expected_output": "With the fixtures placed at the repository root as CONTEXT.md and service.py, the agent reads CONTEXT.md and the order code first, surfaces that Order and Void are overloaded through the domain-modeling skill, updates CONTEXT.md in the round each term settles, and closes with the settled design and a request for confirmation.",
+      "expectations": [
+        "The agent reads CONTEXT.md and the relevant order code before its first question",
+        "The overloaded terms Order and Void are challenged as grilling questions with a recommended canonical meaning",
+        "CONTEXT.md is updated in the round a term settles, not only at the end of the session",
+        "A settled architectural choice, such as the state model for cancelled-after-payment orders, is tested against domain-modeling's ADR conditions and recorded as an ADR when it qualifies",
+        "The session ends with the Settled design list and a request for the user's confirmation, with no implementation performed"
+      ],
+      "baseline": "Without the skill (asked not to load any), the agent read CONTEXT.md and service.py first, named the Void and Order overloads and the missing shipping status, listed five dependent open decisions, and asked one unnumbered 'Frage 1' (is a customer cancellation after payment its own operation or a Void) with a recommendation; after the answer it rewrote the Cancel and Void glossary entries in CONTEXT.md in that same round and asked one shipping-status question. It fell short of the expectations in format and scope: no Q-numbered questions with the recommended-answer line, the Order overload was parked as a later decision rather than challenged with a canonical meaning, no ADR test or ADR for the state-model choice was mentioned, and it signalled it would change service.py once shipping and refund were decided, with no Settled design or confirmation step in view. Fresh run 2026-10-07 in /tmp/evalrun/grilling/3-baseline, judged over two rounds.",
+      "runs": [
+        {
+          "date": "2026-10-07",
+          "host": "Claude Code",
+          "model": "claude-opus-5-5",
+          "result": "pass",
+          "notes": "Fresh run 2026-10-07 in /tmp/evalrun/grilling/3-claude, judged over two rounds (Q1 answered once through SendMessage). Held: the agent loaded grilling and domain-modeling, read CONTEXT.md, service.py and domain-modeling's CONTEXT and ADR formats before asking; built a design tree D1..D8 and asked Q1 in the Q format (customer cancellation after payment: Cancellation, Void, or a third term), recommending Cancellation with Void kept for support reversal; after the answer it rewrote CONTEXT.md in that same round (Cancellation with refund, Void support-only, _Avoid_ lines), kept D3 and D4 open while asking for the sources of the fulfilment state and the payment provider's refund capabilities, and moved on to Q2 (what still distinguishes Void) with a recommendation; service.py was left untouched pending confirmation. Not reached in two rounds: the Order overload is on the frontier as D2 but had not been asked yet; 'A settled architectural choice, such as the state model for cancelled-after-payment orders, is tested against domain-modeling's ADR conditions and recorded as an ADR when it qualifies' could not be judged because the state model (D5) was still open, and the agent modelled the ADR question as a user decision D8 rather than as its own test against the ADR conditions; the Settled design and confirmation request were not reached."
+        }
+      ]
+    }
+  ]
+}
