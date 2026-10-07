@@ -1,0 +1,92 @@
+{
+  "skill_name": "improve-codebase-architecture",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "improve-codebase-architecture",
+      "files": [],
+      "expected_output": "In a git repository with no docs/agents/domain.md, no CONTEXT.md, no ADR directory, and a history in which commits to src/billing/ recur far more than elsewhere, the agent scopes the scan to src/billing/, dispatches a sub-agent for evidence, writes the HTML report to a fresh temp path, opens it, and asks which candidate to explore.",
+      "expectations": [
+        "The agent loads the codebase-design skill before assessing any module",
+        "The agent runs the domain-modeling skill's Establish the document layout step and records CONTEXT.md and the ADR directory as absent evidence",
+        "The scope is set from the recent commit history and names src/billing/ as the hot spot before any module internals are read",
+        "A sub-agent is dispatched with the scope and returns friction with file-level evidence, or the agent states that the host has no sub-agent tool or that the dispatch failed and inspects the modules itself",
+        "Every candidate in the report carries file-level evidence, a friction source, a deletion-test result, a category for each dependency, and a strength of Strong, Worth exploring, or Speculative",
+        "The report is one HTML file at <tmpdir>/architecture-review-<timestamp>.html, the repository has no modified or new files, and the absolute path is returned with the outcome of opening it",
+        "The agent re-reads the written report against the candidate card fields and the top-recommendation anchor and fixes any omission before returning the path",
+        "The report ends with one top-recommendation card linking to a candidate card, and the reply ends with the question \"Which of these would you like to explore?\""
+      ],
+      "baseline": "Without the skill the agent correctly used git history to find src/billing/ as the hot spot and named real cross-module friction (reverse-charge rule duplicated across tax.py and invoice_service.py, discount logic split between discounts.py and the service), but it then rewrote 13 files in the working tree (new protocols, a new test file, README edits) instead of producing a report. No HTML report, no deletion test, no dependency categories, no calibrated strengths, no sub-agent, no check for CONTEXT.md or an ADR directory, and it never asked which candidate to explore; the repository was left modified.",
+      "runs": [
+        {
+          "date": "2026-10-06",
+          "host": "Codex",
+          "model": "gpt-6-astra",
+          "result": "fail",
+          "notes": "\"A sub-agent is dispatched with the scope and returns friction with file-level evidence, or the agent states that the host has no sub-agent tool or that the dispatch failed and inspects the modules itself\": Codex announced 'a separate agent inspection' and then read the modules itself without stating that the host has no sub-agent tool or that a dispatch failed. All other expectations held: codebase-design and domain-modeling read first, CONTEXT.md and ADR directory recorded as absent, scope set to src/billing/ from the 33-commit history before any module internals were read, two Strong candidates with file:line evidence, deletion test, In-process/Local-substitutable categories, report at /tmp/architecture-review-<timestamp>.html checked by a script for card labels and anchors, xdg-open failure reported with the path, top-recommendation card linking to #invoice-calculation, closing question."
+        },
+        {
+          "date": "2026-10-06",
+          "host": "Claude Code",
+          "model": "claude-opus-5-5",
+          "result": "pass",
+          "notes": ""
+        },
+        {
+          "date": "2026-10-06",
+          "host": "OpenCode",
+          "model": "gpt-6-astra",
+          "result": "fail",
+          "notes": "\"Every candidate in the report carries file-level evidence, a friction source, a deletion-test result, a category for each dependency, and a strength of Strong, Worth exploring, or Speculative\", \"The report is one HTML file at <tmpdir>/architecture-review-<timestamp>.html, the repository has no modified or new files, and the absolute path is returned with the outcome of opening it\", \"The agent re-reads the written report against the candidate card fields and the top-recommendation anchor and fixes any omission before returning the path\", and \"The report ends with one top-recommendation card linking to a candidate card, and the reply ends with the question \\\"Which of these would you like to explore?\\\"\": no report was written. The write to /tmp was outside the workspace, OpenCode's non-interactive run auto-rejected the external_directory permission, the patch failed, and the session ended (exit 0) with that error. It did not fall back to another location, return a path, or ask the closing question. The repository stayed clean. The other expectations held: codebase-design and domain-modeling loaded before any module was read, CONTEXT.md and the ADR directory checked by glob and stated as absent, billing named as the hot spot from the 200-commit log before reading internals, and an Explore sub-agent dispatched that completed. Two Strong candidates and one Worth exploring were named only in the narration. The agent also loaded model-routing despite the instruction not to."
+        }
+      ]
+    },
+    {
+      "id": 2,
+      "prompt": "improve-codebase-architecture: every change to order intake touches five files, look at the order intake pipeline",
+      "files": [],
+      "expected_output": "In a repository whose docs/adr/0007-separate-order-validation.md keeps validation in its own module while the code shows that every order change crosses the validator and repository boundary, the agent scopes to order intake, reports the pipeline as a candidate, marks the candidate's card with the ADR and the code evidence for reopening it, and asks which candidate to explore.",
+      "expectations": [
+        "The agent uses the user's direction as scope and does not derive scope from commit history",
+        "The agent reads ADR 0007 before interpreting the order intake seams",
+        "The candidate card for the order intake pipeline shows the ADR callout naming ADR 0007 and the file-level evidence that justifies reopening it",
+        "Each candidate card shows Problem and Deepening as one sentence each with a before/after visual, and no alternative interface designs",
+        "The report is written to a fresh temp path and the repository has no modified or new files",
+        "The reply ends with the question \"Which of these would you like to explore?\""
+      ],
+      "baseline": "Without the skill the agent scoped to order intake as directed and diagnosed the shared mutable OrderDraft and the validator-to-repository coupling from the commit history, but it immediately refactored the pipeline (new PricedOrder type, validator rewritten, repository guards removed, order of validate/price swapped), edited ADR 0007 to 'amended' and wrote a new ADR 0008 without asking. No report, no candidate cards, no ADR callout with evidence for reopening 0007, no before/after visual, and no closing question; the repository was left with 12 modified files and one new file.",
+      "runs": [
+        {
+          "date": "2026-10-06",
+          "host": "Claude Code",
+          "model": "claude-opus-5-5",
+          "result": "pass",
+          "notes": ""
+        }
+      ]
+    },
+    {
+      "id": 3,
+      "prompt": "Let's explore the order intake candidate",
+      "files": [],
+      "expected_output": "After a report that lists the order intake pipeline as a Strong candidate, the agent grills the user through the candidate's design tree, names the deepened module in its owning glossary once the name settles, and stops at confirmed shared understanding without changing code.",
+      "expectations": [
+        "The agent runs the grilling skill and asks one frontier question at a time with a recommended answer",
+        "The design tree covers constraints, dependencies, the deepened module's responsibility, its seam, what remains behind it, and the tests that survive",
+        "When the deepened module's name settles, the agent records the term in its owning glossary through the domain-modeling skill",
+        "When the user rejects the candidate for a durable non-obvious reason, the agent offers to record an ADR",
+        "No source file is modified before the user confirms shared understanding"
+      ],
+      "baseline": "Not runnable here: needs a human to answer the grilling questions turn by turn and to confirm shared understanding, after a prior report session listing the order intake candidate.",
+      "runs": [
+        {
+          "date": "2026-10-06",
+          "host": "Claude Code",
+          "model": "claude-opus-5-5",
+          "result": "skipped",
+          "notes": "Not runnable here: the evaluation is a multi-turn grilling dialogue whose expectations (one frontier question at a time, naming the module once it settles, rejecting the candidate, confirming shared understanding) depend on a human answering each question."
+        }
+      ]
+    }
+  ]
+}

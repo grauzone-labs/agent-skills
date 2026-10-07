@@ -1,6 +1,15 @@
 # HTML report format
 
-This reference defines the presentation for the architecture-review report. The report is one HTML file in the OS temp directory. It loads Tailwind and Mermaid from CDNs, so opening it requires network access to those providers. Mermaid communicates graph-shaped relationships; hand-built HTML/CSS/SVG carries editorial structure such as mass diagrams and cross-sections.
+## Table of contents
+
+- [Scaffold](#scaffold)
+- [Header](#header)
+- [Candidate card](#candidate-card)
+- [Diagram patterns](#diagram-patterns)
+- [Visual style](#visual-style)
+- [Top recommendation](#top-recommendation)
+
+Mermaid communicates graph-shaped relationships; hand-built HTML/CSS/SVG carries editorial structure such as mass diagrams and cross-sections.
 
 ## Scaffold
 
@@ -47,19 +56,19 @@ Move directly from the header into the candidates.
 Render each candidate as one `<article>`.
 
 - **Title** — short, names the deepening; for example, “Collapse the Order intake pipeline”.
-- **Badge row** — recommendation strength (`Strong` in emerald, `Worth exploring` in amber, `Speculative` in slate) and the dependency category from `DEEPENING.md` (`In-process`, `Local-substitutable`, `Remote but owned (Ports & Adapters)`, or `True external`).
+- **Badge row** — recommendation strength (`Strong` in emerald, `Worth exploring` in amber, `Speculative` in slate) and the dependency categories named as in the `codebase-design` skill's `DEEPENING.md`.
 - **Evidence** — a monospaced list of the involved files and the observed code paths or test seams.
+- **Deletion test** — where complexity moves when the current module is removed.
+- **Open question** — for Worth exploring, the unresolved dependency or ownership question; for Speculative, the observation that confirms or rejects the hypothesis.
 - **Before / After** — side-by-side visualisation as the centrepiece.
 - **Problem** — one sentence naming the observed friction.
 - **Deepening** — one sentence naming the responsibility and seam that would concentrate behavior.
 - **Wins** — concise bullets naming the resulting locality, leverage, or test-surface gain.
 - **ADR callout** — when applicable, an amber box that names the ADR and the evidence for reopening it.
 
-Make diagrams self-explanatory enough that Problem and Deepening remain one sentence each. Preserve the selected domain terms and use the `codebase-design` vocabulary when describing architectural roles and outcomes.
-
 ## Diagram patterns
 
-Choose the pattern that makes each candidate's evidence legible. Use visual variety where the structure changes.
+Default to a Mermaid call-flow graph; use a pattern below when its stated comparison represents the evidence better.
 
 ### Mermaid graph
 
@@ -74,6 +83,7 @@ Use a Mermaid `flowchart` or `graph` for dependencies and call flow. Wrap it in 
       C -.leak.-> D[PricingClient]
       classDef leak stroke:#dc2626,stroke-width:2px;
       class C,D leak
+      linkStyle 2 stroke:#dc2626,stroke-width:2px;
   </pre>
 </div>
 ```
@@ -90,7 +100,7 @@ Stack horizontal bands (`h-12 border-l-4`) for a call moving through many shallo
 
 ### Mass diagram
 
-Use two rectangles per module: interface surface and implementation. In the before-state, their visual mass is similar; in the after-state, a short interface fronts a substantial implementation.
+Use two labelled rectangles per module: caller obligations and the behaviour behind the interface. In the before-state, their areas are similar; in the after-state, a small obligations rectangle fronts a large behaviour rectangle.
 
 ### Call-graph collapse
 
@@ -98,12 +108,12 @@ Show a before-tree of calls as nested boxes. In the after-state, place the same 
 
 ## Visual style
 
-Use an editorial layout: generous whitespace, stone/slate base colors, and one accent such as emerald or indigo. Red communicates leakage and amber communicates ADR reconsideration. Keep each diagram about 320px tall so before/after comparisons remain visible together. Use `text-xs uppercase tracking-wider` for module labels in diagrams.
+Use an editorial layout: generous whitespace, stone/slate base colors, and emerald as the accent. Red communicates leakage and amber communicates ADR reconsideration. Keep each diagram about 320px tall so before/after comparisons remain visible together. Use `text-xs uppercase tracking-wider` for module labels in diagrams.
 
 Write sparse, plain evidence-led prose. Wins should name concrete gains, for example:
 
 - `locality: bugs concentrate in one module`
-- `leverage: one interface, N call sites`
+- `leverage: one implementation, N call sites`
 - `interface shrinks; implementation absorbs the wrappers`
 
 ## Top recommendation
