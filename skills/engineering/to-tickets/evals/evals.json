@@ -1,0 +1,121 @@
+{
+  "skill_name": "to-tickets",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "to-tickets evals/files/spec.md. The repository's tracker contract is evals/files/issue-tracker.md; treat it as docs/agents/issue-tracker.md.",
+      "files": [
+        "evals/files/spec.md",
+        "evals/files/issue-tracker.md"
+      ],
+      "expected_output": "The agent reads the tracker contract first, proposes tracer-bullet tickets with blocking edges for approval, and after approval publishes one Markdown file per ticket in dependency order, each with a checkable acceptance-criteria checklist, then reports the identifiers.",
+      "expectations": [
+        "The agent reads evals/files/issue-tracker.md before presenting any breakdown",
+        "The breakdown is presented with the approval template (title, blocked by, delivers, acceptance criteria per ticket) and the agent waits for the user's approval before creating any file",
+        "Every proposed ticket delivers one end-to-end behavior (save, list and apply, delete) rather than a layer-only task such as 'add the database table'",
+        "After approval, one file per ticket exists at .scratch/saved-searches/issues/NN-slug.md, numbered from 01 in dependency order, and no combined tickets file is created",
+        "Each ticket body contains an Acceptance criteria section as a '- [ ]' checklist, a Blocked by section, and a Source section referring to evals/files/spec.md",
+        "evals/files/spec.md is left unchanged",
+        "Each published ticket records Category: enhancement and Triage: ready-for-agent near the top, and the agent reads back every created file before reporting",
+        "The closing report lists every created ticket identifier with its blockers"
+      ],
+      "baseline": "Read the spec and the tracker contract, then wrote six tickets straight to .scratch/saved-searches/issues/ plus a copy of the spec without presenting a breakdown or asking for approval. Ticket 01 was a layer-only repository task ('Saved-search repository with per-user name uniqueness') and 06 a layer-only UI task, so save/list/apply/delete were not end-to-end slices; the bodies used 'Depends on'/'Blocks' header lines with plain-bullet acceptance criteria instead of a '- [ ]' checklist and Blocked by section, no Category or Triage field was set (the agent judged the field only applies to triaged bugs), and no file was read back before the report.",
+      "runs": [
+        {
+          "date": "2026-10-06",
+          "host": "Claude Code",
+          "model": "claude-fable-5-1",
+          "result": "fail",
+          "notes": "\"Each published ticket records Category: enhancement and Triage: ready-for-agent near the top\": every ticket carries Category: enhancement but no Triage line; the agent reasoned that docs/agents/triage-labels.md is absent and the contract's 'Triage: <state role>' field does not define a native ready state, so step 5.3's 'publish without a readiness state' branch applied. All other expectations held: contract read first, approval template presented and the agent waited (publishing only after the orchestrator relayed approval), five end-to-end tickets 01-05 in dependency order with checklist criteria, Blocked by, and Source sections, spec unchanged, files read back, report with blockers. The Skill tool refused the skill because of disable-model-invocation, so the subagent read SKILL.md from ~/.agents/skills directly; no host task-list tool was available to the subagent, so it tracked the five steps inline."
+        },
+        {
+          "date": "2026-10-07",
+          "host": "OpenCode",
+          "model": "gpt-6-astra",
+          "result": "fail",
+          "notes": "\"Each published ticket records Category: enhancement and Triage: ready-for-agent near the top\": all three tickets carry Category: enhancement and no Triage line; the approval message already stated 'No readiness state is defined by the supplied contract', the 'publish without a readiness state' branch of SKILL.md step 5.3 (no docs/agents/triage-labels.md, and the contract's 'Triage: <state role>' field names no native ready state). All other expectations held: the five steps recorded as todos, contract read before any breakdown (spec and contract read in the same batch), approval template (title, blocked by, delivers, acceptance criteria) presented and the run stopped for approval, three end-to-end tickets 01-03 (save and list, apply, delete; 02 and 03 blocked by 01) at .scratch/saved-searches/issues/NN-slug.md with '- [ ]' criteria, Blocked by, and Source sections linking evals/files/spec.md, no combined tickets file, spec unchanged, every file read back before the report, report listing 01-03 with blockers; publishing followed one 'opencode run --continue' carrying the approval. Navigation note: the host still loaded the model-routing skill right after to-tickets despite the prompt, but only confirmed the fixed model and did all drafting and publishing itself with gpt-6-astra, no delegation."
+        },
+        {
+          "date": "2026-10-07",
+          "host": "Codex",
+          "model": "gpt-6-astra",
+          "result": "fail",
+          "notes": "\"Each published ticket records Category: enhancement and Triage: ready-for-agent near the top\": all three tickets carry Category: enhancement but no Triage line; the first turn already stated 'No readiness state is defined by the tracker contract', applying the 'publish without a readiness state' branch of SKILL.md step 5.3 (no docs/agents/triage-labels.md, and the contract's 'Triage: <state role>' field names no native ready state). All other expectations held: contract read before the spec and before any breakdown, approval template (title, blocked by, delivers, acceptance criteria) presented and the run stopped asking for approval, three end-to-end tickets 01-03 (save and list, apply, delete; 02 and 03 blocked by 01) at .scratch/saved-searches/issues/NN-slug.md with '- [ ]' criteria, Blocked by, and Source sections linking evals/files/spec.md, no combined tickets file, spec unchanged (a copy was additionally written to .scratch/saved-searches/spec.md per the contract's convention), every file read back with cat before the report, report listing 01-03 with blockers. The model-routing skill was not loaded this time, so the breakdown came after one turn and publishing after one 'codex exec resume --last' carrying the approval. The skill was loaded by reading ~/.agents/skills/to-tickets/SKILL.md; no update_plan call."
+        }
+      ]
+    },
+    {
+      "id": 2,
+      "prompt": "to-tickets: turn the plan we just agreed on into tickets.",
+      "files": [],
+      "expected_output": "In a repository without docs/agents/issue-tracker.md, the agent stops before drafting or publishing anything and reports that repository setup blocks ticketing and that the setup-software-engineering-skills skill establishes the contract.",
+      "expectations": [
+        "The agent looks for docs/agents/issue-tracker.md before drafting",
+        "Finding it absent, the agent stops and reports that repository setup blocks ticketing and names the setup-software-engineering-skills skill, instead of guessing a tracker or writing tickets to an ad-hoc location",
+        "No ticket is published before the tracker contract exists"
+      ],
+      "baseline": "Listed the workspace, found only README.md and the init commit, and stopped because no plan was present in the session or the repository; it asked the user to paste the plan, point at a plan file, and say where tickets should go. It never looked for docs/agents/issue-tracker.md, did not report that repository setup blocks ticketing, and did not name the setup-software-engineering-skills skill; no ticket was written.",
+      "runs": [
+        {
+          "date": "2026-10-06",
+          "host": "Claude Code",
+          "model": "claude-fable-5-1",
+          "result": "pass",
+          "notes": ""
+        }
+      ]
+    },
+    {
+      "id": 3,
+      "prompt": "to-tickets evals/files/rename-spec.md. The repository's tracker contract is evals/files/issue-tracker.md; treat it as docs/agents/issue-tracker.md.",
+      "files": [
+        "evals/files/rename-spec.md",
+        "evals/files/issue-tracker.md"
+      ],
+      "expected_output": "The agent recognises a codebase-wide mechanical change, opens references/wide-refactors.md, and proposes an expand ticket, per-package migrate tickets blocked by expand, and a contract ticket blocked by every migrate ticket.",
+      "expectations": [
+        "The agent opens references/wide-refactors.md before drafting the breakdown",
+        "The breakdown contains exactly one expand ticket with no blockers",
+        "Each migrate ticket covers a bounded batch (one package or the public API) and is blocked by the expand ticket",
+        "The contract ticket that removes CustomerId is blocked by every migrate ticket",
+        "Exactly one ticket's acceptance criteria carry the spec's public API compatibility requirement: customerId stays accepted, with accountId emitted beside it, until the next major release",
+        "The dependency graph is acyclic and the agent asks for approval before publishing"
+      ],
+      "baseline": "Read the spec and the tracker contract, then wrote seven tickets plus a spec copy straight to .scratch/rename-customer-id-to-account-id/ without presenting a breakdown or asking for approval. The shape resembled expand-migrate-contract on its own (01 alias, 02-04 per-package migrations, 05 public API dual-field compatibility, 06 remove alias) but added an out-of-scope 07 'drop customerId in the next major release', used 'Depends on'/'Blocks' header lines with plain-bullet criteria instead of a '- [ ]' checklist and Blocked by section, set no Category or Triage field, and never consulted any wide-refactor guidance.",
+      "runs": [
+        {
+          "date": "2026-10-06",
+          "host": "Claude Code",
+          "model": "claude-fable-5-1",
+          "result": "pass",
+          "notes": "All expectations held: wide-refactors.md opened before drafting; one expand ticket with no blockers; four migrate tickets (public API types, billing, auth, reporting) each blocked only by expand; the contract ticket blocked by all four; the compatibility requirement with 'until the next major release' carried by the public API migrate ticket; acyclic graph; approval template and questions, no file written. Observation: the contract ticket's acceptance criteria also contain a guard line 'The public API still accepts customerId and emits it beside accountId (compatibility layer from ticket 2 untouched)', which restates the requirement rather than owning it. Skill tool refused the skill (disable-model-invocation), so the subagent read SKILL.md and references/wide-refactors.md directly; no host task-list tool was available."
+        }
+      ]
+    },
+    {
+      "id": 4,
+      "prompt": "to-tickets evals/files/rename-spec.md. The repository's tracker contract is evals/files/issue-tracker.md; treat it as docs/agents/issue-tracker.md. One change to the spec's decisions: the migration batches cannot pass CI independently, so use an integration branch and require green CI before the complete change merges. Propose the breakdown for approval.",
+      "files": [
+        "evals/files/rename-spec.md",
+        "evals/files/issue-tracker.md"
+      ],
+      "expected_output": "The agent opens references/wide-refactors.md, keeps the expand, migrate, and contract sequence on an integration branch, and adds a final integrate-and-verify ticket blocked by the contract ticket that owns the end-to-end green verification.",
+      "expectations": [
+        "The agent opens references/wide-refactors.md before drafting the breakdown",
+        "The breakdown contains one expand ticket, bounded migrate tickets each blocked by expand, one contract ticket blocked by every migrate ticket, and one integrate-and-verify ticket blocked by the contract ticket",
+        "The integrate-and-verify ticket's acceptance criteria include green CI for the complete change on the integration branch",
+        "The breakdown is presented with the approval template and the agent asks for approval before publishing anything"
+      ],
+      "baseline": "Read the spec and the contract and proposed eight tickets in a table for approval without the title/blocked-by/delivers/acceptance-criteria template: 01 combined creating the integration branch with renaming the shared type outright (no expand step, branch deliberately red from the start), 02-04 per-package migrations, 05 public API compatibility, 06 a tests-only ticket, 07 'merge integration branch to main' with a full green CI run, and 08 a parked next-major removal; it also proposed rewriting the published spec's CI decision and asked five design questions. No wide-refactor guidance was consulted and acceptance criteria were prose cells rather than checkable lists.",
+      "runs": [
+        {
+          "date": "2026-10-06",
+          "host": "Claude Code",
+          "model": "claude-fable-5-1",
+          "result": "pass",
+          "notes": "All expectations held: wide-refactors.md opened before drafting; one expand ticket, migrate tickets for billing, auth, reporting, and the public API types each blocked by expand, the contract ticket blocked by every migrate ticket, and an integrate-and-verify ticket blocked by the contract ticket whose criteria require green CI on the head of the integration branch before merging; approval template with questions, nothing published. Observation: the agent added a separate 'Public API accepts customerId and emits accountId beside it' ticket between expand and the public API migrate ticket (blocked by expand, blocking the API migrate ticket), so the graph has eight tickets rather than the minimal six. Skill tool refused the skill (disable-model-invocation), so the subagent read SKILL.md and references/wide-refactors.md directly; no host task-list tool was available."
+        }
+      ]
+    }
+  ]
+}
