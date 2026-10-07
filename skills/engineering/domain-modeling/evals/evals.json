@@ -1,0 +1,95 @@
+{
+  "skill_name": "domain-modeling",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "Our billing code says client, customer, and account for the same thing: the person or organization receiving an invoice and paying it. Pick and record one canonical term; these are synonyms here.",
+      "files": [
+        "evals/files/CONTEXT.md",
+        "evals/files/billing.py"
+      ],
+      "expected_output": "With CONTEXT.md placed at the repository root and billing.py at src/billing.py, and no CONTEXT-MAP.md or docs/agents/domain.md, the agent reads the glossary and code, chooses one canonical term under the user's authorization, and adds it to CONTEXT.md in the glossary format with the other words under Avoid.",
+      "expectations": [
+        "The agent reads the root CONTEXT.md and searches the billing code for the three words before proposing a term",
+        "The agent proposes exactly one canonical term and lists the other two under _Avoid_",
+        "The new entry in CONTEXT.md follows the Language format: bold term, one- or two-sentence definition, an _Avoid_ line",
+        "The existing Invoice and Payment entries are left unchanged",
+        "The reply ends with the Delivery evidence block naming the CONTEXT.md path, the term added, the code evidence checked, and unresolved items or none"
+      ],
+      "baseline": "Read CONTEXT.md and src/billing.py, chose Customer and added it in the existing glossary format with Client and account under _Avoid_, placed before Invoice and leaving Invoice and Payment unchanged. It went beyond the ask and renamed all three parameters in src/billing.py to customer, and it reported with a free-form summary in German rather than the Delivery evidence block, so the CONTEXT.md path, code evidence, and unresolved items were not reported in the prescribed form.",
+      "runs": [
+        {
+          "date": "2026-10-06",
+          "host": "Claude Code",
+          "model": "claude-fable-5-1",
+          "result": "pass",
+          "notes": ""
+        },
+        {
+          "date": "2026-10-06",
+          "host": "Codex",
+          "model": "gpt-6-astra",
+          "result": "pass",
+          "notes": ""
+        },
+        {
+          "date": "2026-10-06",
+          "host": "OpenCode",
+          "model": "gpt-6-astra",
+          "result": "pass",
+          "notes": ""
+        }
+      ]
+    },
+    {
+      "id": 2,
+      "prompt": "We decided to keep the write model in Postgres instead of the event store, even though the rest of the system is event-sourced: we want transactional SQL constraints more than replayable write history, and moving later would mean rewriting every reporting query. Note that down.",
+      "files": [
+        "evals/files/CONTEXT.md"
+      ],
+      "expected_output": "With the fixture placed as the root CONTEXT.md, no other repository files, and no docs/adr/ directory, the agent tests the decision against the three ADR conditions, creates docs/adr/0001-postgres-write-model.md (or a similar slug) with the one-paragraph template, and reports it.",
+      "expectations": [
+        "The agent checks the three conditions (hard to reverse, surprising without context, a real trade-off) before writing",
+        "The ADR is written to docs/adr/ with number 0001 and a slug filename, and the directory is created only for this ADR",
+        "The ADR body is a title plus one to three sentences giving the context, the decision, and the reason; a Considered options section appears only if it names the event store as the rejected alternative",
+        "CONTEXT.md gains no entry, because no term was settled",
+        "The reply ends with the Delivery evidence block naming the ADR directory and the recorded decision"
+      ],
+      "baseline": "Wrote a long Nygard-style ADR (Date, Status, Context, Decision, Consequences) to docs/decisions/0001-write-model-in-postgres.md instead of docs/adr/, never tested the decision against the three qualifying conditions, and padded the context with three invented Billing invariants and a claim that Billing publishes events, none of which the user stated. It also added a Decisions section with a link to the root CONTEXT.md, which should have stayed untouched, and reported with a free-form German summary instead of the Delivery evidence block.",
+      "runs": [
+        {
+          "date": "2026-10-06",
+          "host": "Claude Code",
+          "model": "claude-fable-5-1",
+          "result": "pass",
+          "notes": ""
+        }
+      ]
+    },
+    {
+      "id": 3,
+      "prompt": "Define and record shipment versus delivery for the fulfillment package: a shipment is a dispatched group of goods, a delivery is a completed handover to the recipient. There is no implementation yet.",
+      "files": [
+        "evals/files/domain.md"
+      ],
+      "expected_output": "With the fixture placed at docs/agents/domain.md and a packages/fulfillment/ directory present, the agent follows the repository's own layout: it writes the two terms to packages/fulfillment/DOMAIN.md in the entry form the file prescribes and touches neither a root CONTEXT.md nor docs/adr/.",
+      "expectations": [
+        "The agent reads docs/agents/domain.md before reading or writing any domain document",
+        "Both terms are written to packages/fulfillment/DOMAIN.md using the entry form from domain.md, not the CONTEXT-FORMAT.md structure",
+        "No root CONTEXT.md and no docs/adr/ directory is created",
+        "The agent asks or states which concrete scenario separates a shipment from a delivery (for example a shipment split across two deliveries) before settling the definitions",
+        "The reply ends with the Delivery evidence block naming packages/fulfillment/DOMAIN.md and decisions/ as the documents"
+      ],
+      "baseline": "Read docs/agents/domain.md and wrote both terms to packages/fulfillment/DOMAIN.md in the prescribed entry form, plus a prose section contrasting the two, and created neither a root CONTEXT.md nor docs/adr/. It settled the definitions without naming or asking about a concrete boundary scenario such as a shipment split across two deliveries (partial handover is only implied by 'or the part of a shipment'), and it reported with a free-form German summary instead of the Delivery evidence block naming DOMAIN.md and decisions/.",
+      "runs": [
+        {
+          "date": "2026-10-06",
+          "host": "Claude Code",
+          "model": "claude-fable-5-1",
+          "result": "pass",
+          "notes": ""
+        }
+      ]
+    }
+  ]
+}
