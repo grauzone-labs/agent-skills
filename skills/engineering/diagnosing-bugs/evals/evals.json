@@ -1,0 +1,93 @@
+{
+  "skill_name": "diagnosing-bugs",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "debug this: the nightly worker calls render_csv in evals/files/report.py once per customer, and from the second customer on the file starts with two header lines and contains the previous customer's rows.",
+      "files": [
+        "evals/files/report.py"
+      ],
+      "expected_output": "The agent builds a one-command loop that goes red on the duplicated header before stating any hypothesis, minimises it, ranks falsifiable hypotheses, locks the bug down with a regression test, and reports with the Phase 6 checklist ticked.",
+      "expectations": [
+        "The agent records the six phases in the host's task list tool before Phase 1, or copies the progress checklist into its first response where the host has no task list tool",
+        "Before any hypothesis appears, the agent shows one command it has already run (a pytest invocation or a python one-liner calling render_csv twice) together with its red output on the duplicated header",
+        "The minimised repro is two calls to render_csv with at most one row each, and the agent shows the loop still red after the cuts",
+        "Three to five ranked hypotheses, each with a stated prediction, are in the agent's response before any probe",
+        "Every debug log the agent adds carries a [DEBUG-...] prefix and none remains at the end",
+        "A regression test exists that the agent showed failing before the fix and passing after it",
+        "The final report shows the Phase 6 checklist ticked and names the module-level buffer surviving across calls as the confirmed hypothesis"
+      ],
+      "baseline": "Without the skill the agent read report.py, ran a two-call python script that showed the duplicated header, moved the module-level _lines buffer into the function, and re-ran the script green. It went straight from reading the code to the fix with no ranked hypotheses, no minimisation, no debug probes, and no progress checklist; it only suggested a two-call regression test instead of writing one, so nothing locks the bug down.",
+      "runs": [
+        {
+          "date": "2026-10-06",
+          "host": "Claude Code",
+          "model": "claude-fable-5-1",
+          "result": "fail",
+          "notes": "\"The agent records the six phases in the host's task list tool before Phase 1, or copies the progress checklist into its first response\": it searched for a task list tool, found none, and wrote no checklist; its first and only substantive response was the final report, ticking just the Phase 6 line. \"Before any hypothesis appears, the agent shows one command it has already run ... with its red output\": the unittest loop was run red in the tool log, but no command or red output appears in the response. \"The minimised repro is two calls ... and the agent shows the loop still red after the cuts\": the cuts (one call, zero rows) were run in the tool log, not shown in the response. \"Three to five ranked hypotheses, each with a stated prediction, are in the agent's response before any probe\": no hypothesis list was ever written to the response; H1-H4 appear only by name in the final report. Debug tags, the red-then-green regression test, and the ticked Phase 6 checklist naming the module-level buffer all held."
+        },
+        {
+          "date": "2026-10-06",
+          "host": "Codex",
+          "model": "gpt-6-astra",
+          "result": "fail",
+          "notes": "\"The final report shows the Phase 6 checklist ticked and names the module-level buffer surviving across calls as the confirmed hypothesis\": the module-level _lines buffer is named as the confirmed cause, but the five-item checklist is collapsed into one line (\"Cleanup: All six phases complete; regression passed; no debug instrumentation or temporary artifacts remain\") instead of being shown ticked item by item. The other six expectations held: checklist copied into the first response, the two-call python3 repro and its AssertionError shown before the hypotheses, cuts to one prior row and an empty second call shown still red, three ranked hypotheses with predictions before the probe, no debug logs left behind, regression test shown failing then passing."
+        },
+        {
+          "date": "2026-10-06",
+          "host": "OpenCode",
+          "model": "gpt-6-astra",
+          "result": "pass",
+          "notes": ""
+        }
+      ]
+    },
+    {
+      "id": 2,
+      "prompt": "Diagnose this: since last week's deploys, GET /api/orders on the dev server takes about 4 seconds instead of under 500 ms. Every commit since then is on main.",
+      "files": [],
+      "expected_output": "In a repository with a runnable dev server, the agent treats the report as a performance regression: it measures a baseline, builds a timing loop that asserts the threshold, bisects the commits with that loop, and verifies the fix by re-running the timing loop.",
+      "expectations": [
+        "The agent records a baseline measurement of the request time before changing anything",
+        "The Phase 1 command asserts on the timing symptom against a threshold, and the agent shows its invocation and red output before any hypothesis",
+        "The agent runs a bisection harness over the commits on main using that timing command, in the form of git bisect run or an equivalent automated loop",
+        "Probes are measurements (profiler, query plan, timing harness) rather than debug logs",
+        "Three to five ranked hypotheses with stated predictions are in the agent's response before the probes",
+        "After the fix, the agent re-runs the original timing loop and reports its green output"
+      ],
+      "baseline": "Not runnable here: needs a repository with a runnable dev server exposing GET /api/orders and a commit history on main that contains the regression; the evaluation ships no fixtures and the skill-evals sandbox has no HTTP server.",
+      "runs": [
+        {
+          "date": "2026-10-06",
+          "host": "Claude Code",
+          "model": "claude-fable-5-1",
+          "result": "skipped",
+          "notes": "Not runnable here: needs a repository with a runnable dev server exposing GET /api/orders and a commit history on main containing the regression; no fixtures are provided and faking a service was ruled out."
+        }
+      ]
+    },
+    {
+      "id": 3,
+      "prompt": "debug this: customers say the Export button in the admin dashboard throws 'Unexpected token' in production. We cannot see it on staging or locally, and I do not have a HAR file.",
+      "files": [],
+      "expected_output": "In a repository where the agent cannot reach production, the agent tries the loop constructions in order down to the HITL script, and when none goes red on the reported symptom it stops without hypothesising and asks for exactly what would make a loop possible.",
+      "expectations": [
+        "The agent shows which loop constructions it tried (failing test, curl, headless browser, replay, harness, HITL script) and why each could not go red on the reported symptom",
+        "No hypothesis list appears before an observed red result on the exact symptom",
+        "The agent stops with the blocked report (Blocked phase, Tried, Needed) and asks for access to an environment that reproduces the bug, a redacted captured artifact such as a HAR file or log dump, or permission to add temporary production instrumentation",
+        "Where a human must click, the agent copies scripts/hitl-loop.template.sh, edits the scenario and verdict between its markers, and asks the user to run it in their terminal and paste the output back rather than asking free-form questions; it stops only after the pasted output also fails to go red",
+        "Every shown command, output, or artifact has secrets replaced with the literal text REDACTED in angle brackets"
+      ],
+      "baseline": "Not runnable here: needs a repository containing the admin dashboard with its Export button, a production environment the agent cannot reach, and a human to run the HITL script and paste its output back; the evaluation ships no fixtures and a subagent run has no human in the loop.",
+      "runs": [
+        {
+          "date": "2026-10-06",
+          "host": "Claude Code",
+          "model": "claude-fable-5-1",
+          "result": "skipped",
+          "notes": "Not runnable here: needs a repository containing the admin dashboard with its Export button and a human to run the HITL script and paste its output back; no fixtures are provided and a subagent cannot receive the pasted output."
+        }
+      ]
+    }
+  ]
+}
