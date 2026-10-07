@@ -1,0 +1,97 @@
+{
+  "skill_name": "pr",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "Write the PR description for this branch using the supplied repository snapshot and test results; the repository cannot be read.",
+      "files": [
+        "evals/files/cache-case.md"
+      ],
+      "expected_output": "Using the supplied cache-check snapshot and test results, the agent returns a Markdown body with the Summary, Evidence, and Merge Danger sections from the template, a pseudocode or diff visual of the save handler, the test named before and after, a two-way door, and a note in Evidence that the repository could not be read.",
+      "expectations": [
+        "The body has exactly the three sections Summary, Evidence, and Merge Danger, in that order",
+        "The Summary holds one visual in a fenced block next to one or two sentences naming the key point",
+        "The visual is pseudocode or a diff of the save handler, trimmed to the calls and states the point needs",
+        "The Evidence section names the exact test that failed before and passes now, as Before and After",
+        "The Evidence section states that the repository could not be read",
+        "The Merge Danger section names the door and the blast radius",
+        "The reply starts with the Summary heading and contains only the body"
+      ],
+      "baseline": "Without the skill the agent wrote PR_DESCRIPTION.md with a title, a branch line, and five sections (Summary with an ASCII call-flow sketch, Change with the raw source diff, Evidence quoting the supplied test run, What to watch when reviewing, Scope) and summarised the file in chat instead of returning the body alone. It covered the before/after test result and the stale-cache risk, but did not use the three-section template, named no door and no blast radius, did not state in Evidence that the repository could not be read, and showed the untrimmed source diff rather than pseudocode of the save handler.",
+      "runs": [
+        {
+          "date": "2026-10-06",
+          "host": "Claude Code",
+          "model": "claude-fable-5-1",
+          "result": "pass",
+          "notes": ""
+        },
+        {
+          "date": "2026-10-07",
+          "host": "Codex",
+          "model": "gpt-6-astra",
+          "result": "fail",
+          "notes": "Repeat with model-routing excluded by the prompt; it was not loaded. No body was produced: the agent read SKILL.md, then replied 'Please provide the repository snapshot and test results; neither is included in the conversation' instead of reading evals/files/cache-case.md in the workspace. All seven expectations failed on the absent body: 'The body has exactly the three sections Summary, Evidence, and Merge Danger, in that order', 'The Summary holds one visual in a fenced block next to one or two sentences naming the key point', 'The visual is pseudocode or a diff of the save handler, trimmed to the calls and states the point needs', 'The Evidence section names the exact test that failed before and passes now, as Before and After', 'The Evidence section states that the repository could not be read', 'The Merge Danger section names the door and the blast radius', 'The reply starts with the Summary heading and contains only the body'."
+        },
+        {
+          "date": "2026-10-07",
+          "host": "OpenCode",
+          "model": "gpt-6-astra",
+          "result": "fail",
+          "notes": "Repeat with model-routing excluded by the prompt; OpenCode still loaded it after the pr skill, but it did not route the task. No body was produced: the agent replied 'Please provide the repository snapshot and test results; neither is included in this conversation' instead of reading evals/files/cache-case.md in the workspace. All seven expectations failed on the absent body: 'The body has exactly the three sections Summary, Evidence, and Merge Danger, in that order', 'The Summary holds one visual in a fenced block next to one or two sentences naming the key point', 'The visual is pseudocode or a diff of the save handler, trimmed to the calls and states the point needs', 'The Evidence section names the exact test that failed before and passes now, as Before and After', 'The Evidence section states that the repository could not be read', 'The Merge Danger section names the door and the blast radius', 'The reply starts with the Summary heading and contains only the body'."
+        }
+      ]
+    },
+    {
+      "id": 2,
+      "prompt": "Write and open the PR for this branch against main; it closes issue 42.",
+      "files": [],
+      "expected_output": "In a GitHub repository with no docs/agents/issue-tracker.md, on a branch that drops a database column, the agent reads the diff against main, writes the body with Closes #42 in the Summary and a one-way door, opens the pull request with gh using the body and --base main, and returns PR: followed by the URL.",
+      "expectations": [
+        "The agent diffs the branch against main and reads the commit messages before writing",
+        "The Summary opens with Closes #42",
+        "The Merge Danger section names a one-way door and the data blast radius",
+        "The pull request is opened with gh pr create, a title, and the written body file",
+        "The gh pr create call passes --base main",
+        "The reply ends with PR: followed by the pull request URL"
+      ],
+      "baseline": "Not runnable here: needs a GitHub repository with an open issue 42, a branch that drops a database column, and permission to open a pull request there; the evaluation supplies no fixtures.",
+      "runs": [
+        {
+          "date": "2026-10-06",
+          "host": "Claude Code",
+          "model": "claude-fable-5-1",
+          "result": "skipped",
+          "notes": "Not runnable here: needs a GitHub repository with an open issue 42, a branch that drops a database column, and permission to open a pull request there; the evaluation supplies no fixtures."
+        }
+      ]
+    },
+    {
+      "id": 3,
+      "prompt": "Revise this PR description so it is faster to review. Use the supplied snapshot; the repository cannot be read and the app and its tests cannot run.",
+      "files": [
+        "evals/files/pr-body.md",
+        "evals/files/toolbar-case.md"
+      ],
+      "expected_output": "Given a prose-only PR body for a toolbar component that gained a button and a snapshot naming the test command, in an environment that cannot run the app or its tests, the agent rewrites it into the template with a component-tree diff, an Evidence section that names the capture command on each side and states it was not run, and a two-way door with a layout blast radius.",
+      "expectations": [
+        "The revised body follows the template with the three sections",
+        "The Summary visual is a diff of the component tree showing the added button",
+        "Both the Before and After slots name npm run test:toolbar -- --grep 'toolbar layout' and state that it was not run",
+        "The Merge Danger section names a two-way door and a blast radius of layout shift or similar scope",
+        "Every sentence kept from the original sits inside a template slot",
+        "The reply starts with the Summary heading and contains only the body"
+      ],
+      "baseline": "Without the skill the agent rewrote pr-body.md into a title plus four sections (What changed with the component diff and a prose click-to-result flow, Evidence, Merge risk, Review focus). It kept the component diff and named npm run test:toolbar -- --grep 'toolbar layout' as the way to produce screenshots on both branches, but Evidence had no Before/After slots and still asserted 'I tested the flow manually in a local session'; Merge risk listed three concerns without naming a door or a blast radius; and the Review focus list sat outside any template slot.",
+      "runs": [
+        {
+          "date": "2026-10-06",
+          "host": "Claude Code",
+          "model": "claude-fable-5-1",
+          "result": "pass",
+          "notes": ""
+        }
+      ]
+    }
+  ]
+}
