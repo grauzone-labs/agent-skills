@@ -1,6 +1,6 @@
 interface:
   display_name: "Implement"
-  short_description: "Implement approved specifications in verifiable slices"
+  short_description: "Implement an approved spec or ticket in verified slices"
 
 policy:
   allow_implicit_invocation: false
