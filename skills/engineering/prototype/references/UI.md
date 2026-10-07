@@ -1,12 +1,12 @@
 # UI prototype
 
-Generate **several radically different UI variations** on one route, switchable from a floating bottom bar. The user flips between variants in the browser, picks one (or combines elements), then the validated design is implemented properly.
+Generate **several radically different UI variants** on one route, switchable from a floating bottom bar. The user flips between variants in the browser and picks one or combines elements.
 
 For a question about logic or state transitions, return to [SKILL.md](../SKILL.md) and take its logic branch.
 
 ## Choose the host shape
 
-A UI prototype is easiest to judge beside real header, navigation, data, and density. Prefer an existing page whenever one can host the prototype.
+A UI prototype is judged beside real header, navigation, data, and density, so prefer an existing page whenever one can host it.
 
 ### A. Adjustment to an existing page — preferred
 
@@ -18,11 +18,13 @@ Use a clearly named throwaway route only when the prototype has no sensible host
 
 ## Process
 
+Record the six steps below in the host's task list tool, one task per step, before step 1, and mark each done as its completion criterion holds. Where the host offers no task list tool, copy the step names into your first response and tick them there instead.
+
 ### 1. State the question and choose the set
 
 Default to **three** variants; five is the maximum. Write one line at the prototype location or in a top-of-file comment naming the question, host route, and URL contract, for example:
 
-> "Three variants of the settings page, available in development through `?variant=A|B|C` on `/settings`."
+> "Question: which layout makes profile and notification settings easiest to find? Three variants are available in development on `/settings?variant=A`, `/settings?variant=B`, and `/settings?variant=C`; default: A."
 
 This step is complete when a reviewer can identify the page, the question, and every supported variant URL from that line.
 
@@ -44,9 +46,11 @@ Adapt this shape to the project's framework:
 
 ```tsx
 const variants = { A: VariantA, B: VariantB, C: VariantC };
-const prototypeEnabled = process.env.NODE_ENV !== 'production';
+const prototypeEnabled = process.env.NODE_ENV === 'development';
 const requested = searchParams.get('variant');
-const key = requested && requested in variants ? requested : 'A';
+const key = requested && Object.prototype.hasOwnProperty.call(variants, requested)
+  ? requested as keyof typeof variants
+  : 'A';
 const Variant = variants[key];
 
 return prototypeEnabled ? (
@@ -59,11 +63,11 @@ return prototypeEnabled ? (
 );
 ```
 
-Keep existing data fetching above the switcher; only the development subtree varies. This step is complete when each valid URL selects one variant, invalid URLs normalize to the default, and production retains the original route behavior.
+Keep existing data fetching above the switcher; only the development subtree varies. This step is complete when each valid URL selects one variant, invalid URLs normalize to the default, and production retains the original route behaviour.
 
 ### 4. Build the floating switcher
 
-Put the switcher in one shared component, wherever shared UI belongs in the project. Render it only while the development prototype is enabled. It has:
+Put the switcher in one shared component, wherever shared UI belongs in the project. It has:
 
 - a left arrow that cycles to the previous variant and wraps;
 - a label with the current key and optional variant name, such as `B — Sidebar layout`; and
@@ -75,8 +79,8 @@ This step is complete when pointer and keyboard controls cycle through every dec
 
 ### 5. Verify and hand it over
 
-Start the prototype using its documented project command. Open every valid variant URL, then an invalid variant URL, and confirm the declared default is rendered. Verify the switcher cycles in both directions, keyboard behavior preserves text entry, and a production build or equivalent production-mode run preserves the non-prototype route behavior. Surface the route URL and supported variant keys to the reviewer.
+Start the prototype with its task-runner command. Open every valid variant URL, then missing and invalid keys (including `constructor` and `__proto__`), and confirm the declared default is rendered. Verify the switcher cycles in both directions, keyboard behaviour preserves text entry, and a production build or equivalent production-mode run preserves the non-prototype route behaviour. Fix every failure and repeat until every check passes, then surface the route URL and supported variant keys to the reviewer with the hand-off from [SKILL.md](../SKILL.md). Without a browser you can drive, hand the reviewer the URLs and these checks as a list.
 
 ### 6. Capture the answer and clean up
 
-Once a design wins, record which variant won and why, then preserve the complete set as [SKILL.md](../SKILL.md) describes. Implement the winner under the project's normal production standards. For an existing-page prototype, keep only the resulting production subtree in main. For a new-route prototype, promote the resulting design to its real route. Preserve the variants and switcher together on the throwaway branch as the prototype's primary source.
+Once the reviewer selects a design, record which variant won and why, then preserve the complete set — variants and switcher together — as rule 5 of [SKILL.md](../SKILL.md) describes. Implement the winner: for an existing-page prototype, main keeps only the resulting production subtree; for a new-route prototype, promote the resulting design to its real route.
