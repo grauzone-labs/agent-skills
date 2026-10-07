@@ -1,0 +1,94 @@
+{
+  "skill_name": "tdd",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "Use the supplied slug fixture. tdd: add slugify(title) in src/slug.ts. It lowercases the title, joins words with single hyphens, and strips leading and trailing hyphens. Seam: the exported slugify function, tested in tests/slug.test.ts.",
+      "files": [
+        "evals/files/slug.md"
+      ],
+      "expected_output": "In a repository with a passing test suite, the agent lists the three behaviors against the named seam, then builds each one with a single failing test that it runs red before writing the implementation, and ends with a green suite after a refactor.",
+      "expectations": [
+        "Before the first test, the agent lists each behavior with the seam it is observed at",
+        "For each behavior, one failing test is written and run before the implementation that makes it pass, and the agent reports the failure as caused by the missing behavior rather than a setup or compile error",
+        "Every expected value is a known literal such as hello-world, never a value computed in the test the way the implementation computes it",
+        "The tests call only the exported slugify function and never a private helper",
+        "The suite is run and reported green at handoff; the refactor entry names a change or states none"
+      ],
+      "baseline": "Without the skill the agent still worked test-first: three node:test cases against the exported slugify, each run red with the assertion failure on the missing behavior, then the minimal implementation, with a green 4-test suite and an explicit \"no refactor needed\" at the end. It fell short only in form: it never listed the behaviors with their seam before the first test, and it did not give the handoff line with the suite command and result.",
+      "runs": [
+        {
+          "date": "2026-10-06",
+          "host": "Claude Code",
+          "model": "claude-fable-5-1",
+          "result": "pass",
+          "notes": ""
+        },
+        {
+          "date": "2026-10-06",
+          "host": "Codex",
+          "model": "gpt-6-astra",
+          "result": "pass",
+          "notes": "Codex also auto-loaded the globally installed model-routing skill and delegated the loop to a gpt-6.1-sol sub-session; the sub-session's rollout shows each test run red on its assertion (Hello !== hello, hello  world, --hello--) before the implementation change. The parent listed the three behaviors and the seam in prose, not in the Behavior/Seam/Agreement line form the skill prescribes."
+        },
+        {
+          "date": "2026-10-07",
+          "host": "OpenCode",
+          "model": "gpt-6-astra",
+          "result": "pass",
+          "notes": "Repeat with model-routing excluded by the prompt; OpenCode still loaded it after the tdd skill, but it kept gpt-6-astra and did not delegate. All five expectations held: the three behaviors were listed in the Behavior/Seam/Agreement form before the first test, each test was run red on its assertion ('Hello' !== 'hello', 'hello  world' !== 'hello-world', '--hello--' !== 'hello') before the implementation change, the tests call only the exported slugify with literal expectations, and the handoff reported Behaviors 3/3, Refactor none, Suite node --test tests/*.test.ts -> 4 passed."
+        }
+      ]
+    },
+    {
+      "id": 2,
+      "prompt": "Use the supplied signup fixture. tdd: when a user signs up through registerUser in src/users.ts, send them a welcome email through our Postmark account. Seam: registerUser.",
+      "files": [
+        "evals/files/signup.md"
+      ],
+      "expected_output": "The agent reads mocking.md, injects the email client so that only the Postmark boundary is mocked, keeps the project's own modules real, and verifies the behavior through registerUser rather than through call counts on internal collaborators.",
+      "expectations": [
+        "The agent reads references/mocking.md before writing the test that reaches the email boundary",
+        "The email client is passed into registerUser or its module rather than constructed inside it",
+        "Only the external email client is mocked; the project's own modules and internal collaborators run real",
+        "The test's assertion is observable through registerUser's interface or the injected boundary, not through a database query or a private method",
+        "The first test is run red before the implementation is written",
+        "The assertion checks the outgoing welcome message recipient and content at the injected boundary"
+      ],
+      "baseline": "Without the skill the agent injected a sendEmail dependency into registerUser with a real Postmark fetch adapter as the default, ran the welcome-email test red before implementing, and asserted the literal recipient and message at the injected boundary. It fell short in the loop: the default real adapter broke the existing registration test during Green (missing POSTMARK_SERVER_TOKEN), and it then added three adapter tests in bulk after the implementation, green on first run, with globalThis.fetch mocked.",
+      "runs": [
+        {
+          "date": "2026-10-06",
+          "host": "Claude Code",
+          "model": "claude-fable-5-1",
+          "result": "pass",
+          "notes": "Read references/mocking.md before writing the email test; mocking.md and SKILL.md were the only skill files read."
+        }
+      ]
+    },
+    {
+      "id": 3,
+      "prompt": "Use the supplied cart fixture. tdd: write all the tests for the new cart module first (add item, remove item, apply coupon, total with tax), then implement the whole module.",
+      "files": [
+        "evals/files/cart.md"
+      ],
+      "expected_output": "No seam is named, so the agent proposes a public seam for the cart module and waits for confirmation, then builds the four behaviors one tracer bullet at a time instead of writing the tests in bulk.",
+      "expectations": [
+        "The agent proposes the seam, such as the cart module's exported functions, and waits for the user's confirmation before writing a test",
+        "The agent does not write the four tests in bulk; each behavior gets one failing test, its implementation, and a green suite before the next test is written",
+        "The agent names the bulk approach as horizontal slicing and explains the one-test-at-a-time loop it follows instead",
+        "The tax total test asserts a known literal rather than recomputing the tax the way the implementation does"
+      ],
+      "baseline": "Without the skill the agent did what the prompt asked: it wrote all thirty tests for the cart module in one file, ran them once red on ERR_MODULE_NOT_FOUND rather than on any missing behavior, then implemented the whole module and reported 30 green tests. It never proposed a seam or waited for confirmation, invented a wide interface (quantities, subtotal, discountedSubtotal, input validation) beyond the four behaviors, and the only one-test-at-a-time loop was a single follow-up test for a duplicate-ID rule it added itself. The tax assertions did use known literals (1080, 909).",
+      "runs": [
+        {
+          "date": "2026-10-06",
+          "host": "Claude Code",
+          "model": "claude-fable-5-1",
+          "result": "fail",
+          "notes": "\"The agent proposes the seam, such as the cart module's exported functions, and waits for the user's confirmation before writing a test\": the agent chose createCart() with addItem/removeItem/applyCoupon/total({taxPercent}) and went straight into the loop, reporting at the end that the seam signatures were its proposal; it never paused for agreement. The other three expectations held: four behaviors each run red on the missing behavior then green (a first module-not-found red was recognised as a setup error and a shell added), the reply named the brief's bulk request as horizontal slicing and explained the one-test-at-a-time loop, and the tax test asserts the literal 1080."
+        }
+      ]
+    }
+  ]
+}
