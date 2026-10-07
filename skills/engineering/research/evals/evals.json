@@ -1,0 +1,116 @@
+{
+  "skill_name": "research",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "Research whether fetch() in Node.js 20 follows HTTP redirects by default, and write the finding down so we can link it from the ADR.",
+      "files": [],
+      "expected_output": "The agent acts as research lead: it bounds the brief, fixes the path docs/research/<slug>.md, dispatches one background worker, verifies the returned finding, and reports path, answer, and caveats.",
+      "expectations": [
+        "The agent takes the research lead role and dispatches exactly one background subagent whose prompt contains 'Role: research worker', the brief, the exact finding path, and an instruction to load the research skill",
+        "The brief states the question, scope, source constraints, and repository root",
+        "With no user-named location and no repository convention, the finding path is docs/research/<slug>.md",
+        "The finding file has the sections Answer, Evidence, and Caveats and open questions",
+        "Every Evidence entry links the Node.js documentation, the undici source, or the Fetch Standard, not a blog or forum post",
+        "The lead reads the finding and reports the path, the answer, and the caveats to the user"
+      ],
+      "baseline": "Without the skill the agent researched the question alone in one session (no worker dispatch, no bounded brief, no second verification pass) and wrote a well-sourced note (Node 20 docs, Fetch Standard, undici v5.28.4 source, plus a local probe that only ran on Node 24) to findings/nodejs20-fetch-redirects.md instead of docs/research/<slug>.md. The file has Answer and Evidence sections but no 'Caveats and open questions' section; its single caveat sits inside an 'Empirical check' subsection. The reply gave the path, the answer, and that caveat.",
+      "runs": [
+        {
+          "date": "2026-10-06",
+          "host": "Claude Code",
+          "model": "claude-fable-5-1",
+          "result": "fail",
+          "notes": "'Every Evidence entry links the Node.js documentation, the undici source, or the Fetch Standard, not a blog or forum post': one of 21 Evidence entries links the issue-tracker thread nodejs/undici#1193 (the origin of undici's manual-redirect deviation) rather than documentation, source, or the standard; the rest link nodejs.org docs, deps/undici source in nodejs/node at v20.0.0 and v20.20.2, and fetch.spec.whatwg.org. All other expectations held: one background worker with 'Role: research worker', the brief (question, scope, source constraints, repository root), the exact path docs/research/nodejs-20-fetch-follows-redirects.md, and the skill-load instruction; the lead read the finding, spot-checked the cited lines, and reported path, answer, and caveats."
+        },
+        {
+          "date": "2026-10-06",
+          "host": "Codex",
+          "model": "gpt-6-astra",
+          "result": "fail",
+          "notes": "'The lead reads the finding and reports the path, the answer, and the caveats to the user': the lead read the finding twice (cat) and its final reply named the path and the answer but no caveat, only 'Saved the cited finding and caveats in docs/research/nodejs-20-fetch-redirects.md', although the worker had returned three caveats to it. 'The agent takes the research lead role and dispatches exactly one background subagent whose prompt contains Role: research worker, ...': the lead spawned exactly one agent (spawn_agent 'fetch_redirect_research', fork_turns all, so it inherited the loaded skill text) and waited on it, but Codex stores the spawn message encrypted in the rollout, so the role marker, brief, path, and skill-load instruction in that prompt could not be verified; the worker's return (path, answer, sources, caveats) matches the worker role. The remaining expectations held: finding at docs/research/nodejs-20-fetch-redirects.md with Answer, Evidence, and Caveats and open questions; every Evidence link is nodejs.org, nodejs/node deps/undici source, or fetch.spec.whatwg.org."
+        },
+        {
+          "date": "2026-10-06",
+          "host": "OpenCode",
+          "model": "gpt-6-astra",
+          "result": "pass",
+          "notes": ""
+        }
+      ]
+    },
+    {
+      "id": 2,
+      "prompt": "Role: research worker\n\nLoad the research skill. Question: does PostgreSQL 16 apply the statement_timeout setting to a statement that is already waiting for a lock? Scope: official PostgreSQL 16 documentation only. Repository root: the current directory. Write the finding to docs/research/postgres-16-statement-timeout-lock-wait.md and return the path, the answer, the sources, and the caveats.",
+      "files": [],
+      "expected_output": "The agent acts as research worker: it writes the finding at the exact path from PostgreSQL 16 documentation and returns path, answer, sources, and caveats without dispatching anyone or touching a tracker.",
+      "expectations": [
+        "The agent takes the research worker role and dispatches no subagent",
+        "The finding is created at docs/research/postgres-16-statement-timeout-lock-wait.md and nowhere else",
+        "The file has the sections Answer, Evidence, and Caveats and open questions",
+        "Every material claim in Answer has a corresponding Evidence entry that links a postgresql.org documentation page with its version or section",
+        "Caveats mark any inference or unresolved question, or state 'None found'",
+        "The reply returns the exact path, the concise answer, the source links, and the caveats, and performs no tracker action"
+      ],
+      "baseline": "Without the skill the agent still acted as a single worker (no subagent, no tracker action), wrote the finding at the exact path from postgresql.org/docs/16 pages with section anchors, and returned path, answer, sources, and caveats. It fell short of the layout: the last section is 'Caveats' rather than 'Caveats and open questions', and an extra 'Practical consequences' section asserts claims (SQLSTATE 57014 vs 55P03, aborted transaction state) without their own Evidence entries, although the inference behind the main answer is marked.",
+      "runs": [
+        {
+          "date": "2026-10-06",
+          "host": "Claude Code",
+          "model": "claude-fable-5-1",
+          "result": "pass",
+          "notes": ""
+        }
+      ]
+    },
+    {
+      "id": 3,
+      "prompt": "Look up whether the GitHub REST API's primary rate limit for a fine-grained personal access token counts against the token or against the user, and record the finding.",
+      "files": [
+        "evals/files/CONTRIBUTING.md"
+      ],
+      "expected_output": "The agent acts as research lead in a repository whose CONTRIBUTING.md names notes/research/<question-slug>.md as the research-note convention, so the finding lands there, is verified by the lead, and is reported with its caveats.",
+      "expectations": [
+        "The agent inspects the repository and fixes the finding path under notes/research/, not docs/research/",
+        "The agent dispatches exactly one background subagent marked 'Role: research worker' with the brief and the exact path",
+        "Every Evidence entry links docs.github.com",
+        "The lead checks that every material claim in Answer has an Evidence entry and sends any gap back to the worker before reporting",
+        "The lead's report to the user names the path, the answer, and the caveats"
+      ],
+      "baseline": "Without the skill the agent read CONTRIBUTING.md, placed the note under notes/research/, and also created notes/research/INDEX.md with a link. It researched alone with no worker dispatch and no separate verification pass; every link was docs.github.com. The note has Answer and Evidence sections but 'Caveats' instead of 'Caveats and open questions' plus a 'Practical consequence' section; the reply named the path, the answer, and the main caveat.",
+      "runs": [
+        {
+          "date": "2026-10-06",
+          "host": "Claude Code",
+          "model": "claude-fable-5-1",
+          "result": "fail",
+          "notes": "'The agent dispatches exactly one background subagent marked Role: research worker with the brief and the exact path': exactly one worker was dispatched with the role marker, the brief, and the exact path, but with run_in_background false, so the lead blocked on it instead of running it in the background. 'Every Evidence entry links docs.github.com': one of ten Evidence entries links github.blog/changelog (the fine-grained PAT announcement, cited to show it says nothing about rate limits); the lead's own brief had allowed the GitHub changelog as a source. The other expectations held: path fixed under notes/research/ after reading CONTRIBUTING.md, the lead read the finding before reporting, the report named path, answer, and caveats; the lead also created notes/research/INDEX.md per the convention."
+        }
+      ]
+    },
+    {
+      "id": 4,
+      "prompt": "Research whether this repository requires research notes to be linked from an index and whether it requires reviewer approval for them. Use only the supplied CONTRIBUTING.md as a source; write the finding to notes/research/note-requirements.md. Repository root: the current directory.",
+      "files": [
+        "evals/files/CONTRIBUTING.md"
+      ],
+      "expected_output": "The agent acts as research lead with a local-only source: the finding at the named path cites CONTRIBUTING.md by repository-relative path for the index requirement and marks reviewer approval as unresolved because the permitted source does not state it.",
+      "expectations": [
+        "The agent takes the research lead role and the finding is created at notes/research/note-requirements.md and nowhere else",
+        "The Evidence entry for the index requirement links CONTRIBUTING.md by repository-relative path, not a URL",
+        "Reviewer approval is not asserted as a fact in Answer; Caveats and open questions marks it as unresolved because the permitted source does not state it",
+        "The lead reports the path, the answer, and the caveats to the user and performs no tracker action"
+      ],
+      "baseline": "Without the skill the agent wrote the finding at notes/research/note-requirements.md and additionally created notes/research/INDEX.md, so the finding was not the only new file. The note uses its own layout (Findings, Summary table) instead of Answer, Evidence, and Caveats and open questions; CONTRIBUTING.md is quoted and named but not linked by path. The reviewer-approval heading reads 'not required (no rule found)', which the body softens to absence of evidence, but no caveats section marks it unresolved. The reply gave the path and the answer; no worker was dispatched and no tracker was touched.",
+      "runs": [
+        {
+          "date": "2026-10-06",
+          "host": "Claude Code",
+          "model": "claude-fable-5-1",
+          "result": "fail",
+          "notes": "'The Evidence entry for the index requirement links CONTRIBUTING.md by repository-relative path, not a URL': the entries link ../../CONTRIBUTING.md, a path relative to the note rather than to the repository root (not a URL, and it resolves correctly). The other expectations held: the finding exists at notes/research/note-requirements.md and nowhere else, reviewer approval is stated as 'no requirement found' in Answer and marked as inference with unconsulted locations in Caveats and open questions, the report named path, answer, and caveats, no tracker action. Deviation from the skill text: the lead dispatched no worker although the Agent tool was available; it cited a harness rule against re-delegating the whole assignment and performed the worker steps itself."
+        }
+      ]
+    }
+  ]
+}
