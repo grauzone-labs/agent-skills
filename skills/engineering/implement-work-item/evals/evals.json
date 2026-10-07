@@ -1,0 +1,91 @@
+{
+  "skill_name": "implement-work-item",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "implement-work-item 3",
+      "files": [],
+      "expected_output": "In the grauzone-dev/skill-evals repository, where issue 3 is blocked by issue 1, and issue 1 is closed but its pull request 2 is still open, the agent presents the context summary and stops at the dependency gate without creating a branch or changing code.",
+      "expectations": [
+        "The agent records the twelve steps in the host's task list tool before step 1, or copies the progress checklist into its first response where the host has no task list tool",
+        "The context summary follows the template of step 1 for issue 3",
+        "The agent lists every blocking dependency record of issue 3, including the closed issue 1, before any git write",
+        "The agent reports issue 1 as a closed blocker whose pull request 2 is not merged and stops with the Dependencies line and the Blocked line",
+        "No branch is created, no pull request is opened, and no file in the repository is modified"
+      ],
+      "baseline": "Without the skill, the agent read AGENTS.md and the tracker contract, enumerated issue 3's blocked_by records and found issue 1 closed with its only closing pull request 2 still unmerged, then judged the blocker irrelevant because greet does not use farewell and proceeded anyway, noting the gap only in the pull request body. It created feature/3-time-of-day-greeting from main, wrote the tests first, made one commit, opened pull request 10 with Closes #3, merged it at once with gh pr merge --rebase --delete-branch --match-head-commit, and ticked the four criteria in the issue body; it never stopped for a go and presented no context summary.",
+      "runs": [
+        {
+          "date": "2026-10-06",
+          "host": "Claude Code",
+          "model": "claude-fable-5-1",
+          "result": "pass",
+          "notes": "All five expectations held: checklist copied into the response (the sub-agent host exposes no task list tool), step 1 summary for issue 3, Dependencies line naming closed issue 1 with pull request 2 unmerged, Blocked line, no branch, pull request, or file change. Invocation caveat: the Skill tool refuses this skill from a sub-agent because of disable-model-invocation, so the run emulated the user invocation by reading SKILL.md."
+        },
+        {
+          "date": "2026-10-07",
+          "host": "Codex",
+          "model": "gpt-6-astra",
+          "result": "fail",
+          "notes": "Rerun with -c sandbox_workspace_write.network_access=true; every gh call reached GitHub and the gate behaved correctly, but the report formats did not. Failed: 'The context summary follows the template of step 1 for issue 3': the summary was a free-form 'Work item #3: <title>' paragraph with a combined 'State: OPEN; no parents or children' line, a 'Scope' line, and the four criteria folded into one line; no '## Work item' heading, no Type and state, separate Parents and Children lines, Summary, or Public seams line. 'The agent reports issue 1 as a closed blocker whose pull request 2 is not merged and stops with the Dependencies line and the Blocked line': the content held ('Although #1 is closed, its linked PR #2 is unmerged against main', then stop), but there was no 'Dependencies:' line and the blocker came as a bold 'Blocked: dependency #1 has no verified merged implementation.' plus a separate 'Needed:' line instead of the single 'Blocked: <operation>; Cause: <...>; Needed: <...>' form of SKILL.md line 40. 'The agent records the twelve steps in the host's task list tool before step 1...': it copied a reworded twelve-step checklist into a message instead of calling Codex's update_plan tool, and never ticked it. Held: blocked_by enumerated through the REST dependencies endpoint ([{number 1, state closed}]) and PR 2 checked through GraphQL closedByPullRequestsReferences (merged false) before any git write; no branch, pull request, or file change (git ls-remote identical before and after, no new pull request in gh pr list, issue 3 body and state unchanged, clone clean apart from the harness's .last-message.md). Side note: it read the model-routing SKILL.md alongside AGENTS.md and the tracker contract despite the prompt (SKILL.md line 37 requires it), without delegating."
+        },
+        {
+          "date": "2026-10-06",
+          "host": "OpenCode",
+          "model": "gpt-6-astra",
+          "result": "pass",
+          "notes": "All five expectations held: twelve steps recorded with the todo tool before step 1, step 1 summary for issue 3 (parents and children none, criteria named with their item and the greet seam), blocked_by enumerated (issue 1, closed) and its closing pull request 2 checked through GraphQL (merged false), then 'Dependencies: #1 is closed, but its linked implementation PR #2 is not merged' and a Blocked/Cause/Needed report; no branch, pull request, issue edit, or file change (the only untracked path is the harness's .agents symlink). Side notes: it loaded model-routing despite the prompt telling it not to (SKILL.md line 37 requires it) and printed a Route line; the Blocked report split Blocked, Cause, and Needed over three lines instead of the single-line form of SKILL.md line 40."
+        }
+      ]
+    },
+    {
+      "id": 2,
+      "prompt": "implement-work-item 4",
+      "files": [],
+      "expected_output": "In the grauzone-dev/skill-evals repository, where issue 4 has the sub-issues 5 and 6 and no blockers, and main advances after the work branch was pushed, the agent presents the context summary, implements the shout function test-first, rebases, re-verifies, proves and ticks the acceptance criteria in the issue body, reports with the ready template, and waits for the user's go before opening a pull request.",
+      "expectations": [
+        "The context summary follows the template of step 1 and lists sub-issues 5 and 6 with ID, title, and state",
+        "The work branch is created from the up-to-date main and named by the convention feature/4-<slug>",
+        "Every commit message references the issue as #4 and follows Conventional Commits",
+        "A failing test for shout exists before its implementation, and npm test passes on the final head",
+        "After main moves, the agent rebases with --force-with-lease and reruns npm test",
+        "After the review, every acceptance criterion of issue 4 is proven with its evidence named and ticked in the issue body, or listed as open",
+        "The ready report follows the template of step 9, naming the branch, head commit, checks, review state, and the open pull request 2",
+        "The agent stops after the ready report; no pull request for issue 4 exists until the user's go"
+      ],
+      "baseline": "Without the skill, the agent checked blocked_by (empty) and the parent (none) but presented no context summary and never mentioned sub-issues 5 and 6. It created feature/4-shout from main, wrote test/shout.test.js first and saw it fail, implemented src/shout.js, made one commit 'feat: add shout function (#4)', pushed, and opened pull request 11 with Closes #4 immediately, with no ready report and without waiting for a go; it ticked the acceptance criteria in the issue body only after the merge.",
+      "runs": [
+        {
+          "date": "2026-10-06",
+          "host": "Claude Code",
+          "model": "claude-opus-5-5",
+          "result": "skipped",
+          "notes": "Not runnable here: needs a user-invoked session. The Claude Code sub-agent refused to start: the Skill tool rejects implement-work-item because of disable-model-invocation (\"Do not replicate this skill's workflow by other means - it is reserved for explicit user invocation\"), and the sub-agent declined the SKILL.md read-through fallback for the same reason; nothing was changed in the clone or the sandbox. Run /implement-work-item 4 in a top-level Claude Code session to record this evaluation."
+        }
+      ]
+    },
+    {
+      "id": 3,
+      "prompt": "go, merge it",
+      "files": [],
+      "expected_output": "After the user's first go opened the pull request for issue 4 and main has advanced with a conflicting edit, the agent reads the conflict state, resyncs once, waits for the new head to pass npm test and the review, merges with a rebase merge that refuses a moved head, deletes the remote work branch, and reports with the merged template.",
+      "expectations": [
+        "The agent resumes the work item established in the conversation and reads the conflict state from GitHub before deciding to sync",
+        "The rebase is followed by npm test and by a review of every file in which the rebase resolved a conflict",
+        "The merge command is gh pr merge with --rebase, --delete-branch, and --match-head-commit set to the reviewed head",
+        "Only the work item's branch is deleted; feature/1-farewell and pull request 2 are untouched",
+        "The merged report follows the template of step 12, naming the commits on main, the deleted branch, and issue 4 closed as completed"
+      ],
+      "baseline": "Without the skill, in the same session, the agent merged pull request 11 seconds after opening it with gh pr merge 11 --rebase --delete-branch --match-head-commit <head>, without waiting for a go; it read mergeStateStatus CLEAN once, main had not moved, so no conflict, rebase, re-test, or review happened. It reported the pull request merged, the remote branch deleted, and issue 4 closed as completed; pull request 2 and feature/1-farewell were untouched.",
+      "runs": [
+        {
+          "date": "2026-10-06",
+          "host": "Claude Code",
+          "model": "claude-opus-5-5",
+          "result": "skipped",
+          "notes": "Not runnable here: needs a user-invoked session. The Claude Code sub-agent refused to start: the Skill tool rejects implement-work-item because of disable-model-invocation (\"Do not replicate this skill's workflow by other means - it is reserved for explicit user invocation\"), and the sub-agent declined the SKILL.md read-through fallback for the same reason; nothing was changed in the clone or the sandbox. Run /implement-work-item 4 in a top-level Claude Code session to record this evaluation."
+        }
+      ]
+    }
+  ]
+}
