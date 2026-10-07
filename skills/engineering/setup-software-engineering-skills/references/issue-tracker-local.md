@@ -27,4 +27,4 @@ Used by the `wayfinder` skill. The **map** is a file with one **child** file per
 - **Blocking**: a `Blocked by: NN, NN` line near the top. A ticket is unblocked when every file it lists has `Wayfinding: resolved`.
 - **Frontier**: scan `.scratch/<effort>/issues/` for tickets with `Wayfinding: open` that are unblocked; the lowest numeric prefix wins.
 - **Claim**: set `Wayfinding: claimed` and save before any work.
-- **Resolve**: append the answer under an `## Answer` heading, set `Wayfinding: resolved`, then append a context pointer (artifact + link) to the map's Decisions so far in `map.md`.
+- **Resolve**: append the answer under an `## Answer` heading, set `Wayfinding: resolved`, then append its index line (the ticket's name linked, then a one-line gist) to the map's Decisions so far in `map.md`.
