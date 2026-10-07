@@ -2,16 +2,9 @@
 
 Mock at **system boundaries** only:
 
-- External APIs (payment, email, etc.)
-- Databases (sometimes - prefer test DB)
-- Time/randomness
-- File system (sometimes)
-
-Don't mock:
-
-- Your own classes/modules
-- Internal collaborators
-- Anything you control
+- External APIs (payment, email, and the like)
+- Time and randomness
+- Databases and the file system: default to a real test database and a temporary directory; mock only when the test environment cannot provide one
 
 ## Designing for mockability
 
@@ -51,9 +44,3 @@ const api = {
   fetch: (endpoint, options) => fetch(endpoint, options),
 };
 ```
-
-The SDK approach means:
-- Each mock returns one specific shape
-- No conditional logic in test setup
-- Easier to see which endpoints a test exercises
-- Type safety per endpoint
