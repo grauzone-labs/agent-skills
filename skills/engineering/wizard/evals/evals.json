@@ -1,0 +1,100 @@
+{
+  "skill_name": "wizard",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "Write me a wizard that sets up everything this repo needs for local dev and CI.",
+      "files": [
+        "evals/files/.env.example",
+        "evals/files/deploy.yml"
+      ],
+      "expected_output": "The agent reads .env.example and the deploy workflow, shows a stage list covering FLY_API_TOKEN, FLY_APP_NAME, SENTRY_DSN, and SENTRY_AUTH_TOKEN with where each is written and whether it is secret, waits for confirmation, then authors the wizard under scripts/ from the template and verifies it.",
+      "expectations": [
+        "The agent reads .env.example and the deploy workflow before asking the user anything",
+        "The stage list is a table with the Stage, Value or action, Source, Destination and key, and Secret/public columns, names every secrets.* and vars.* reference in deploy.yml except GITHUB_TOKEN as a value the wizard produces, and the agent waits for confirmation before authoring",
+        "The script is a copy of assets/template.sh with the library above the STAGES marker byte-identical to the template",
+        "TOTAL_STAGES equals the number of stage calls written",
+        "FLY_API_TOKEN and SENTRY_AUTH_TOKEN are read with ask_secret, written with write_env, and set with set_secret under exactly the names the workflow references",
+        "FLY_APP_NAME is set with set_var, and SENTRY_DSN is written with write_env but not set as a GitHub secret",
+        "The script neither asks for nor writes the platform-provided GITHUB_TOKEN",
+        "Every open_url precedes the ask for the value found at that URL",
+        "Every stage ends with a pause before the next stage clears the screen",
+        "The agent runs bash -n, the library diff, and chmod +x, and traces the script statically rather than running it, checking set_secret and set_var names against the workflow",
+        "The hand-off tells the user to run the script from the repo root"
+      ],
+      "baseline": "Read .env.example and deploy.yml, then wrote a 566-line setup-wizard.sh at the repo root with its own helper library and --local/--ci/--check modes, without showing a stage list or asking for confirmation. It reads FLY_API_TOKEN and SENTRY_AUTH_TOKEN hidden, sets them with gh secret set and FLY_APP_NAME with gh variable set, and leaves GITHUB_TOKEN alone, but it never opens a URL in the browser (it prints links instead), runs flyctl auth login and token creation itself, verified by executing the script through a pseudo-TTY rather than tracing it, and the hand-off names no run command.",
+      "runs": [
+        {
+          "date": "2026-10-06",
+          "host": "Claude Code",
+          "model": "claude-fable-5-1",
+          "result": "fail",
+          "notes": "\"The stage list is a table ... and the agent waits for confirmation before authoring\": the table had the five columns and named FLY_APP_NAME, FLY_API_TOKEN and SENTRY_AUTH_TOKEN with GITHUB_TOKEN excluded, but the agent wrote scripts/setup.sh in the same turn, saying it could not confirm interactively in a non-interactive run and inviting changes afterwards. Everything else held: six stages with TOTAL_STAGES=6, library diff empty, bash -n, chmod +x, static trace against deploy.yml, ask_secret/write_env/set_secret for both secrets, set_var FLY_APP_NAME, SENTRY_DSN only in .env, every stage ends with pause, open_url before each ask, hand-off with cd to the repo root; vendor paths were checked with the research skill (finding left under docs/research/)."
+        },
+        {
+          "date": "2026-10-06",
+          "host": "Codex",
+          "model": "gpt-6-astra",
+          "result": "pass",
+          "notes": ""
+        },
+        {
+          "date": "2026-10-06",
+          "host": "OpenCode",
+          "model": "gpt-6-astra",
+          "result": "pass",
+          "notes": ""
+        }
+      ]
+    },
+    {
+      "id": 2,
+      "prompt": "Build a wizard that walks me through cutting production DNS over from Heroku to Fly.",
+      "files": [],
+      "expected_output": "The agent scopes the current state, the target state, and the irreversible actions, confirms the stage list, and authors a wizard whose irreversible stages are gated with confirm and whose pure-action stages write no values.",
+      "expectations": [
+        "The scope names the current state, the target state, and each irreversible action between them",
+        "The agent shows the stage list and lets the user add, drop, or reorder before authoring",
+        "Where the agent does not know the current Heroku or Fly UI, it checks the vendor docs with the research skill first and asks the user only where the docs do not settle it",
+        "Every irreversible action, including one the human performs in the browser, is preceded by a confirm gate whose declining branch warns what was stopped and exits before the action",
+        "Stages that are pure actions carry no ask, write_env, set_secret, or set_var call and end with a pause",
+        "Each stage holds one focused task",
+        "The agent tells the user the command to run and that the script is theirs to delete once the cutover is done"
+      ],
+      "baseline": "Wrote a 557-line heroku-to-fly-dns-cutover.sh with ten numbered steps, resumable state in .cutover-state/, DNS-over-HTTPS fallbacks and curl probes, and committed it itself, without scoping the current and target state with the user, showing a stage list, or consulting vendor docs (Bash, Write, Edit only). Only the DNS flip has a y/N confirm; the Heroku teardown is deferred to a generated post-cutover.md checklist rather than a gated stage, most steps mix actions with value prompts, and the hand-off names no run command and does not say the script is disposable.",
+      "runs": [
+        {
+          "date": "2026-10-06",
+          "host": "Claude Code",
+          "model": "claude-fable-5-1",
+          "result": "fail",
+          "notes": "\"Each stage holds one focused task\": stage 7 of scripts/dns-cutover-heroku-to-fly.sh bundles three tasks across two consoles (fly certs add and fly certs setup for apex and www, a mid-stage pause, then a second open_url to add both _acme-challenge CNAMEs at Cloudflare, then polling fly certs check until issued); stage 11 likewise bundles maintenance:on, ps:scale web=0 and the one-way domains:remove under one gate. Everything else held: the first turn proposed a 12-stage table naming the current Heroku DNS targets, the Fly A/AAAA/CNAME target and the confirm-gated cutover and teardown, asked about domains, DNS provider, app names and scope, and waited for add/drop/reorder; it then loaded research and had a worker write docs/research/heroku-to-fly-dns-cutover.md before authoring; confirm gates precede the cutover and the Heroku teardown, and scripted stdin showed each declining branch warns and exits 1 before the action; pure-action stages carry no ask or write calls and end with pause; bash -n passes, the library diff is empty, TOTAL_STAGES=12 matches; the hand-off gives cd to the repo root plus ./scripts/dns-cutover-heroku-to-fly.sh and says the script can be deleted after the cutover. Stage-list confirmation came from the orchestrator via SendMessage."
+        }
+      ]
+    },
+    {
+      "id": 3,
+      "prompt": "I need a Sentry DSN and an auth token in my .env; make a wizard for it.",
+      "files": [],
+      "expected_output": "The agent maps a verified dashboard journey for each value, classifies the DSN as public and the auth token as secret, and authors a wizard that opens the Sentry pages, asks for each value, and upserts both into .env.",
+      "expectations": [
+        "Each stage states the exact dashboard path to the value, in the form Dashboard → Section → Page → copy",
+        "Where the agent is unsure of the current Sentry UI, it checks the vendor docs with the research skill first and asks the user only where the docs do not settle it, rather than presenting an unverified path",
+        "The auth token is read with ask_secret and the DSN with ask",
+        "Both values are written with write_env and no set_secret call is made without a CI reference to justify it",
+        "The user is asked to confirm the stage list before the script is written",
+        "The syntax check and library diff are run before hand-off"
+      ],
+      "baseline": "Wrote scripts/sentry-env-wizard.sh (313 lines) with its own prompt, validation, curl verification and .env backup logic, plus an unrequested .env.example and .gitignore, without showing a stage list or asking for confirmation and without checking the Sentry docs (no web tools used). The dashboard paths are spelled out from memory as numbered steps (Settings -> Projects -> project -> Client Keys (DSN); Settings -> Developer Settings -> Organization Tokens), the token is read hidden and the DSN visibly, both land in .env, no browser is opened, and verification was a pseudo-TTY run rather than bash -n plus a library diff.",
+      "runs": [
+        {
+          "date": "2026-10-06",
+          "host": "Claude Code",
+          "model": "claude-fable-5-1",
+          "result": "fail",
+          "notes": "\"The user is asked to confirm the stage list before the script is written\": the agent showed the two-stage table and scripts/sentry-setup.sh in the same reply, noting it could not ask and inviting changes afterwards. \"Where the agent is unsure of the current Sentry UI, it checks the vendor docs with the research skill first\": it fetched the Sentry DSN and auth-token docs directly with WebFetch and never invoked the research skill. The other expectations held: both stages state the dashboard path (Settings → Projects → project → Client Keys (DSN); Settings → Developer Settings → Organization Tokens), ask for the DSN and ask_secret for the token, both write_env and no set_secret, bash -n and an empty library diff before hand-off."
+        }
+      ]
+    }
+  ]
+}
