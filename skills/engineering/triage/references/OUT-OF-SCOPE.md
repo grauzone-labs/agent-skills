@@ -1,9 +1,13 @@
 # Out-of-scope knowledge base
 
-The `.out-of-scope/` directory in a repo stores persistent records of rejected feature requests. It serves two purposes:
+## Table of contents
 
-1. **Institutional memory** - why a feature was rejected, so the reasoning isn't lost when the issue is closed
-2. **Deduplication** - when a new issue comes in that matches a prior rejection, the skill can surface the previous decision instead of re-litigating it
+- [Directory structure](#directory-structure)
+- [File format](#file-format)
+- [When to check `.out-of-scope/`](#when-to-check-out-of-scope)
+- [When to write to `.out-of-scope/`](#when-to-write-to-out-of-scope)
+
+The `.out-of-scope/` directory in a repo stores persistent records of rejected feature requests: why each was rejected and which issues asked for it, so a repeat request surfaces the prior decision instead of re-litigating it.
 
 ## Directory structure
 
@@ -20,7 +24,7 @@ One file per **concept**, not per issue. Multiple issues requesting the same thi
 
 The file should be written in a relaxed, readable style - more like a short design document than a database entry. Use paragraphs, code samples, and examples to make the reasoning clear and useful to someone encountering it for the first time.
 
-```markdown
+````markdown
 # Dark mode
 
 This project does not support dark mode or user-facing theming.
@@ -51,55 +55,39 @@ interface ThemeConfig {
 - #42 - "Add dark mode support"
 - #87 - "Night theme for accessibility"
 - #134 - "Dark theme option"
-```
+````
 
 ### Naming the file
 
-Use a short, descriptive kebab-case name for the concept: `dark-mode.md`, `plugin-system.md`, `graphql-api.md`. The name should be recognizable enough that someone browsing the directory understands what was rejected without opening the file.
+Use a short, descriptive kebab-case name for the concept: `dark-mode.md`, `plugin-system.md`, `graphql-api.md`.
 
 ### Writing the reason
 
-The reason should be substantive - not "we don't want this" but why. Good reasons reference:
+Ground the reason in the maintainer's decision and its evidence:
 
 - Project scope or philosophy ("This project focuses on X; theming is a downstream concern")
 - Technical constraints ("Supporting this would require Y, which conflicts with our Z architecture")
 - Strategic decisions ("We chose to use A instead of B because...")
 
-The reason should be durable. Avoid referencing temporary circumstances ("we're too busy right now") - those aren't real rejections, they're deferrals.
+Record durable scope decisions here; a temporary circumstance ("we're too busy right now") is a deferral and stays in the triage queue.
 
 ## When to check `.out-of-scope/`
 
-During triage (Step 1: Gather context), read all files in `.out-of-scope/`. When evaluating a new issue:
+For the prior-rejection check in step 1, match by concept, not keyword: "night theme" matches `dark-mode.md`.
 
-- Check if the request matches an existing out-of-scope concept
-- Matching is by concept similarity, not keyword - "night theme" matches `dark-mode.md`
-- If there's a match, surface it to the maintainer: "This is similar to `.out-of-scope/dark-mode.md` - we rejected this before because [reason]. Do you still feel the same way?"
+If there's a match, surface it to the maintainer: "This is similar to `.out-of-scope/dark-mode.md` - we rejected this before because [reason]. Do you still feel the same way?"
 
 The maintainer may:
 
-- **Confirm** - the new issue gets added to the existing file's "Prior requests" list, then closed
-- **Reconsider** - the out-of-scope file gets deleted or updated, and the issue proceeds through normal triage
+- **Confirm** - recommend a rejected `wontfix` in step 3; append the issue to the file's "Prior requests" list and close in step 5
+- **Reconsider** - proceed with normal triage; include deleting or updating the file in the recommendation and apply it in step 5; old issues stay closed as historical records
 - **Disagree** - the issues are related but distinct, proceed with normal triage
 
 ## When to write to `.out-of-scope/`
 
 Only when an **enhancement** (not a bug) is *rejected* as `wontfix`. This applies to enhancement PRs exactly as it does to issues - a rejected PR is recorded here so the same request doesn't return as fresh code.
 
-Do **not** write here when something is closed as `wontfix` because it's **already implemented**. That's a built feature, not a rejected one; recording it would poison the dedup checks with false rejections. Instead, the closing comment points to where the feature already lives.
+Something closed as `wontfix` because it's **already implemented** is a built feature, not a rejected one: its closing comment points to where the feature already lives, and this directory stays untouched so the dedup checks only ever match real rejections.
 
-The flow:
+Once the maintainer rejects the request: when a matching file exists, append the new issue to its "Prior requests" list; otherwise create a new file with the concept name, decision, reason, and first prior request. The closing comment links to the file and the mapped `wontfix` label is applied per step 5 of `SKILL.md`.
 
-1. Maintainer decides a feature request is out of scope
-2. Check if a matching `.out-of-scope/` file already exists
-3. If yes: append the new issue to the "Prior requests" list
-4. If no: create a new file with the concept name, decision, reason, and first prior request
-5. Post a comment on the issue explaining the decision and mentioning the `.out-of-scope/` file
-6. Close the issue with the `wontfix` label
-
-## Updating or removing out-of-scope files
-
-If the maintainer changes their mind about a previously rejected concept:
-
-- Delete the `.out-of-scope/` file
-- The skill does not need to reopen old issues - they're historical records
-- The new issue that triggered the reconsideration proceeds through normal triage
