@@ -1,0 +1,92 @@
+{
+  "skill_name": "codebase-design",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "Is OrderService a deep module? Review its interface and tell me how to improve it.",
+      "files": [
+        "evals/files/order-service.ts"
+      ],
+      "expected_output": "The agent calls OrderService shallow by depth-as-leverage, applies the deletion test, and proposes a smaller interface (one checkout-style entry point) that accepts its payment and repository dependencies and returns an observable outcome.",
+      "expectations": [
+        "The agent judges depth as leverage at the interface, naming the glossary terms module, interface, depth, seam, or adapter, and does not measure depth as a ratio of implementation lines to interface lines",
+        "The agent applies the deletion test and states that OrderService's methods are pass-throughs whose complexity would vanish on deletion while the repeated caller sequence would remain",
+        "The proposed interface has fewer entry points than the original and names the invariants, ordering, or error modes a caller must know, not only the type signature",
+        "The proposal accepts the payment gateway and order repository as dependencies instead of constructing them with new inside the module",
+        "The proposed entry point returns a useful outcome such as a receipt so a test can observe the effect through the interface",
+        "The agent keeps the repository's own names OrderService, StripeGateway, and OrderRepo as evidence rather than renaming them to glossary terms"
+      ],
+      "baseline": "Without the skill the agent read order-service.ts, called OrderService shallow because its six one-line methods only forward to OrderRepo and StripeGateway while the real checkout sequence lives in every caller, and proposed a single pay(orderId) entry point with constructor-injected OrderRepository and PaymentGateway ports returning a typed PayResult. It fell short on method and vocabulary: it never ran the deletion test, used no seam or adapter language and no dependency categories, did not distinguish internal from external seams, and treated the interface mainly as methods and result types, listing the invariants callers can break as bugs rather than as part of the interface a caller must know.",
+      "runs": [
+        {
+          "date": "2026-10-06",
+          "host": "Claude Code",
+          "model": "claude-fable-5-1",
+          "result": "pass",
+          "notes": ""
+        },
+        {
+          "date": "2026-10-06",
+          "host": "Codex",
+          "model": "gpt-6-astra",
+          "result": "pass",
+          "notes": ""
+        },
+        {
+          "date": "2026-10-06",
+          "host": "OpenCode",
+          "model": "gpt-6-astra",
+          "result": "pass",
+          "notes": ""
+        }
+      ]
+    },
+    {
+      "id": 2,
+      "prompt": "I want to merge our three billing helpers (invoice math, the Postgres invoice table access, and the Stripe charge wrapper) into one Billing module. Is that a good deepening, and where do the seams go?",
+      "files": [],
+      "expected_output": "The agent gates the merge on observed friction, a coherent responsibility, and the deletion test, classifies each dependency by category, keeps the Postgres seam internal with a local stand-in, takes Stripe as an injected port with a test adapter, and centres new tests on the Billing interface.",
+      "expectations": [
+        "The agent asks for or names observed friction, a coherent responsibility, and the deletion test as the conditions for deepening, and does not justify the merge by the dependency categories alone",
+        "The agent classifies invoice math as in-process, the Postgres table access as local-substitutable, and the Stripe wrapper as true external",
+        "The agent keeps the Postgres seam internal, tested with a local stand-in such as PGLite, rather than making it a port on the Billing interface",
+        "The agent takes the Stripe dependency as an injected port with a test adapter that models the required outcomes",
+        "The agent states that a test adapter alone does not justify an external seam and that an external seam is earned by variation in production behaviour, ownership, or deployment",
+        "The agent recommends writing new caller-facing tests at the Billing interface asserting observable outcomes, and retaining existing internal tests unless the new coverage demonstrably makes them redundant"
+      ],
+      "baseline": "Without the skill the agent rejected the merge outright as smearing three reasons to change together, drew a four-box layout keeping InvoiceMath pure and wrapping both the Postgres access and Stripe as ports with in-memory doubles, and recommended a new Billing use-case module on top of the three helpers. It fell short by not naming observed friction, a coherent responsibility, or the deletion test as the gates for deepening, not classifying the dependencies into categories, making the Postgres seam an external port with an in-memory double instead of an internal seam tested with a stand-in such as PGLite, never stating that a test adapter alone does not earn an external seam, and giving no guidance on new interface-level tests or retaining existing ones.",
+      "runs": [
+        {
+          "date": "2026-10-06",
+          "host": "Claude Code",
+          "model": "claude-fable-5-1",
+          "result": "pass",
+          "notes": ""
+        }
+      ]
+    },
+    {
+      "id": 3,
+      "prompt": "Design the interface for the new Billing module a few radically different ways and compare them. The invoice math is pure, invoices live in Postgres, charges go through Stripe.",
+      "files": [],
+      "expected_output": "The agent frames the problem space for the user, produces three designs under the minimal, flexible, and common-caller constraints (in parallel sub-agents where the host has them), compares them on depth, locality, and seam placement, and commits to a strongest design or a justified hybrid.",
+      "expectations": [
+        "Before any design, the agent shows the user a problem-space explanation with the constraints, the dependencies with their categories (in-process, local-substitutable, true external), and an illustrative code sketch labelled as not a proposal",
+        "Exactly three designs are produced, one each under the constraints minimise the interface, maximise flexibility, and optimise for the most common caller, using parallel sub-agents where the host has a sub-agent tool and sequential passes where it has not or sub-agent execution fails",
+        "Each design states its interface including invariants, ordering, and error modes, a usage example, what the implementation hides behind the seam, its dependency strategy and adapters, and its trade-offs",
+        "The comparison covers depth, locality, and seam placement for every design",
+        "The agent gives one recommendation naming the strongest design or a justified hybrid, rather than leaving the user a menu"
+      ],
+      "baseline": "Without the skill the agent wrote docs/billing-interface-options.md with four designs (hexagonal service object, functional core with imperative shell, event-sourced ledger, Stripe as system of record), a comparison table on where truth lives and who executes side effects, and a recommendation for the functional core behind a thin service facade. It fell short by showing no problem-space explanation or illustrative sketch before designing, by producing four designs not driven by the minimise, flexibility, and common-caller constraints and using no sub-agents, by comparing on its own axes rather than depth, locality, and seam placement, and by never naming the dependency categories.",
+      "runs": [
+        {
+          "date": "2026-10-06",
+          "host": "Claude Code",
+          "model": "claude-fable-5-1",
+          "result": "pass",
+          "notes": ""
+        }
+      ]
+    }
+  ]
+}
