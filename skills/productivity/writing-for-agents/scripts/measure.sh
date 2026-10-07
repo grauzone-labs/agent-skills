@@ -2,10 +2,14 @@
 # Measure a skill against the checkable items of SKILL-REVIEW.md.
 # Usage: scripts/measure.sh <skill-dir>
 # Prints one "ok" or "FAIL" line per measurement; exits 1 when any FAIL.
+# Limits (64, 1024, 500, 100, 3) are the constraints stated in SKILL-MECHANICS.md
+# and the checklist of SKILL-REVIEW.md.
 set -u
 
-dir="${1:?usage: measure.sh <skill-dir>}"
-dir="${dir%/}"
+[ "$#" -eq 1 ] || { printf 'FAIL  usage: measure.sh <skill-dir>\n'; exit 1; }
+dir="$1"
+# Resolve to an absolute path so a relative "." still yields the directory name.
+dir=$(cd "$dir" 2>/dev/null && pwd) || { printf 'FAIL  no such directory: %s\n' "$1"; exit 1; }
 skill="$dir/SKILL.md"
 status=0
 
@@ -50,41 +54,81 @@ version=$(printf '%s\n' "$frontmatter" | awk '/^[ ]+version:/{sub(/^[ ]+version:
 [ "$body_lines" -lt 500 ] && ok "SKILL.md body $body_lines lines < 500" || fail "SKILL.md body $body_lines lines >= 500"
 [ -f "$dir/README.md" ] && fail "README.md inside the skill directory" || ok "no README.md in skill directory"
 
-refs=$(find "$dir" -mindepth 2 -name '*.md' -not -path '*/evals/*' -not -path '*/agents/*' 2>/dev/null | sort)
-for ref in $refs; do
+mapfile -t refs < <(find "$dir" -mindepth 2 -name '*.md' -not -path '*/evals/*' -not -path '*/agents/*' 2>/dev/null | sort)
+for ref in "${refs[@]}"; do
   rel="${ref#"$dir"/}"
   base=$(basename "$ref")
   lines=$(wc -l < "$ref")
-  if grep -q "($rel)" "$skill"; then ok "$rel linked from SKILL.md ($lines lines)"; else fail "$rel not linked from SKILL.md"; fi
+  if grep -Fq "($rel)" "$skill"; then ok "$rel linked from SKILL.md ($lines lines)"; else fail "$rel not linked from SKILL.md"; fi
   if [ "$lines" -gt 100 ]; then
+    # The table of contents must open the file; 30 lines covers a title and intro.
     head -30 "$ref" | grep -Eqi '^## (contents|table of contents)' && ok "$rel has a table of contents" || fail "$rel has $lines lines and no table of contents"
   fi
   # Links from this reference to sibling references (second level).
-  for other in $refs; do
+  for other in "${refs[@]}"; do
     [ "$other" = "$ref" ] && continue
     obase=$(basename "$other")
-    grep -q "($obase)" "$ref" && info "$rel links to $obase: content there must also be linked from SKILL.md"
+    grep -Fq "($obase)" "$ref" && info "$rel links to $obase: content there must also be linked from SKILL.md"
   done
 done
 
 # --- Scripts
-for script in $(find "$dir/scripts" -type f 2>/dev/null | sort); do
+while IFS= read -r script; do
   rel="${script#"$dir"/}"
-  if grep -rq "$(basename "$script")" "$skill" $refs 2>/dev/null; then ok "$rel referenced"; else fail "$rel never referenced from SKILL.md or references"; fi
-done
+  if grep -Frq "$(basename "$script")" "$skill" "${refs[@]}" 2>/dev/null; then ok "$rel referenced"; else fail "$rel never referenced from SKILL.md or references"; fi
+done < <(find "$dir/scripts" -type f 2>/dev/null | sort)
 
 # --- Evaluation
-if [ -f "$dir/evals/evals.json" ]; then
-  n=$(grep -c '"prompt"' "$dir/evals/evals.json")
-  [ "$n" -ge 3 ] && ok "evals/evals.json has $n evaluations" || fail "evals/evals.json has $n evaluations (< 3)"
-else
+if [ ! -f "$dir/evals/evals.json" ]; then
   fail "no evals/evals.json"
+elif command -v node >/dev/null 2>&1; then
+  # skill_name matches the directory; at least three evaluations; prompt, expected_output,
+  # baseline, and every expectation nonempty; every listed file exists relative to the skill.
+  if out=$(node --input-type=module - "$dir" <<'JS'
+import fs from 'node:fs';
+import path from 'node:path';
+try {
+  const dir = process.argv[2];
+  const data = JSON.parse(fs.readFileSync(path.join(dir, 'evals/evals.json'), 'utf8'));
+  const nonempty = value => typeof value === 'string' && value.trim().length > 0;
+  if (data.skill_name !== path.basename(dir)) throw Error('skill_name differs from directory');
+  if (!Array.isArray(data.evals) || data.evals.length < 3) throw Error('at least three evaluations required');
+  for (const e of data.evals) {
+    for (const key of ['prompt', 'expected_output', 'baseline']) {
+      if (!nonempty(e[key])) throw Error(`evaluation ${e.id}: missing ${key}`);
+    }
+    if (!Array.isArray(e.expectations) || !e.expectations.length || !e.expectations.every(nonempty)) {
+      throw Error(`evaluation ${e.id}: expectations must be nonempty statements`);
+    }
+    if (!Array.isArray(e.files)) throw Error(`evaluation ${e.id}: files must be an array`);
+    for (const file of e.files) {
+      if (!nonempty(file) || !fs.existsSync(path.resolve(dir, file))) throw Error(`evaluation ${e.id}: missing input ${file}`);
+    }
+  }
+  console.log(`evals/evals.json has ${data.evals.length} evaluations with required fields and existing inputs`);
+} catch (error) {
+  console.log(error.message);
+  process.exit(1);
+}
+JS
+  ); then ok "$out"; else fail "evals/evals.json: $(printf '%s' "$out" | tr '\n' ' ')"; fi
+else
+  # Without node, count one "prompt" key per evaluation.
+  n=$(grep -c '"prompt"' "$dir/evals/evals.json")
+  [ "$n" -ge 3 ] && ok "evals/evals.json has $n evaluations (node not found: fields unchecked)" || fail "evals/evals.json has $n evaluations (< 3)"
 fi
 
 # --- Validator (skills-ref). disable-model-invocation is the one rejection this collection accepts.
-if command -v npx >/dev/null 2>&1; then
-  out=$(npx -y skills-ref validate "$dir" 2>&1)
-  if printf '%s' "$out" | grep -q '^Valid skill'; then
+validator=()
+if command -v skills-ref >/dev/null 2>&1; then
+  validator=(skills-ref)
+elif command -v npx >/dev/null 2>&1; then
+  validator=(npx -y skills-ref)
+fi
+if [ "${#validator[@]}" -gt 0 ]; then
+  validator_status=0
+  out=$("${validator[@]}" validate "$dir" 2>&1) || validator_status=$?
+  if [ "$validator_status" -eq 0 ] && printf '%s' "$out" | grep -q '^Valid skill'; then
     ok "skills-ref validate passed"
   elif printf '%s' "$out" | grep -q 'Unexpected fields in frontmatter: disable-model-invocation\.' && [ "$(printf '%s' "$out" | grep -c '^  - ')" -eq 1 ]; then
     ok "skills-ref validate passed (accepted deviation: disable-model-invocation)"
@@ -92,7 +136,7 @@ if command -v npx >/dev/null 2>&1; then
     fail "skills-ref validate: $(printf '%s' "$out" | tr '\n' ' ')"
   fi
 else
-  info "npx not found: run skills-ref validate manually"
+  info "neither skills-ref nor npx found: run skills-ref validate manually"
 fi
 
 exit $status
