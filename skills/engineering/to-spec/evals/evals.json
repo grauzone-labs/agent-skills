@@ -1,0 +1,97 @@
+{
+  "skill_name": "to-spec",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "to-spec",
+      "files": [
+        "evals/files/conversation-settled.md",
+        "evals/files/issue-tracker.md"
+      ],
+      "expected_output": "With the conversation in evals/files/conversation-settled.md as the session so far and evals/files/issue-tracker.md installed as docs/agents/issue-tracker.md, the agent publishes a spec file under .scratch/ with every template section, a - [ ] acceptance-criteria checklist, Category: enhancement and Triage: ready-for-agent, and reports the file path as the locator.",
+      "expectations": [
+        "The agent asks the user no question before publishing",
+        "The spec is written to .scratch/<feature-slug>/spec.md with every section of the template present, including Testing Decisions and Out of Scope",
+        "The Acceptance Criteria section is a - [ ] checklist that includes the 403 for a user without orders:read and the header-only CSV for an empty result",
+        "Testing Decisions names the HTTP seam of GET /api/orders with the Accept header and cites orders.api.test.ts as prior art, proposes a minimal UI seam for the Export CSV button with its justification, and adds no lower-level seam",
+        "The spec records Category: enhancement and Triage: ready-for-agent, and the Open questions section is empty",
+        "The agent reads the saved spec file back and fixes any mismatch with the draft before reporting",
+        "The report follows the template and gives the spec file path as the locator"
+      ],
+      "baseline": "Without the skill the agent read docs/agents/issue-tracker.md on its own, wrote .scratch/orders-csv-export/spec.md with Category: enhancement and Triage: ready-for-agent, and reported the path, all without asking a question. It fell short of the template: no User Stories, Implementation Decisions split, Open questions, or Further Notes sections; the acceptance criteria were a numbered list rather than a - [ ] checklist; the Tests section named orders.api.test.ts but gave no seam justification for the toolbar test; it never read the saved file back and reported in free prose instead of the report template.",
+      "runs": [
+        {
+          "date": "2026-10-06",
+          "host": "Claude Code",
+          "model": "claude-fable-5-1",
+          "result": "pass",
+          "notes": ""
+        },
+        {
+          "date": "2026-10-07",
+          "host": "Codex",
+          "model": "gpt-6-astra",
+          "result": "pass",
+          "notes": "Repeat with model-routing excluded by the prompt; Codex still read the model-routing SKILL.md after to-spec but kept gpt-6-astra and did not delegate. All seven expectations held: no question was asked, .scratch/orders-csv-export/spec.md was published with every template section, Category: enhancement and Triage: ready-for-agent, a - [ ] checklist covering the 403 without orders:read and the header-only CSV, Testing Decisions at the GET /api/orders HTTP seam with Accept: text/csv citing orders.api.test.ts plus one justified minimal browser seam for the Export CSV button and no lower-level seam, an empty Open questions section, a read-back of the saved file, and the report template with the file path as locator."
+        },
+        {
+          "date": "2026-10-07",
+          "host": "OpenCode",
+          "model": "gpt-6-astra",
+          "result": "pass",
+          "notes": "Repeat with model-routing excluded by the prompt; OpenCode still loaded model-routing after to-spec but kept gpt-6-astra (it reported 'Model route: specification -> openai/gpt-6-astra') and did not delegate. All seven expectations held: no question was asked, .scratch/orders-csv-export/spec.md was published with every template section, Category: enhancement and Triage: ready-for-agent, a - [ ] checklist covering the 403 without orders:read and the header-only CSV, Testing Decisions at the GET /api/orders HTTP seam with Accept: text/csv citing orders.api.test.ts plus one justified minimal browser seam for the Export CSV button and no lower-level seam, an empty Open questions section, a read-back of the saved file, and the report template with the file path as locator."
+        }
+      ]
+    },
+    {
+      "id": 2,
+      "prompt": "to-spec",
+      "files": [
+        "evals/files/conversation-with-gap.md",
+        "evals/files/issue-tracker.md"
+      ],
+      "expected_output": "With evals/files/conversation-with-gap.md as the session so far and evals/files/issue-tracker.md installed as docs/agents/issue-tracker.md, the agent publishes the spec with the retention rule as the one open question, Triage: needs-decision, and a report that states the promotion condition.",
+      "expectations": [
+        "The agent does not ask the user to settle the retention rule; the spec's Open questions section lists it with the decision needed and its impact on storage",
+        "The spec records Category: enhancement and Triage: needs-decision",
+        "Confirmed decisions carry the actor, timestamp, field, old and new value record, the History tab ordering, and the support-role restriction; anything inferred from the code is placed under Repository-aligned proposals with its evidence",
+        "The report follows the template, lists the open question, and states that the spec is promoted to ready-for-agent once the retention rule is decided"
+      ],
+      "baseline": "Without the skill the agent wrote .scratch/account-audit-trail/spec.md with Category: enhancement and Triage: needs-decision, kept the retention rule as the single open decision with its storage impact, and stated that Triage goes to ready-for-agent once the rule is recorded, without asking the user. It fell short of the template: no User Stories, no split between confirmed decisions and repository-aligned proposals with evidence, the acceptance criteria were plain bullets rather than a - [ ] checklist, there was no read-back of the saved file, and the reply was free prose rather than the report template with Locator, Category, State, Open questions and Promotion condition lines.",
+      "runs": [
+        {
+          "date": "2026-10-06",
+          "host": "Claude Code",
+          "model": "claude-fable-5-1",
+          "result": "pass",
+          "notes": ""
+        }
+      ]
+    },
+    {
+      "id": 3,
+      "prompt": "to-spec",
+      "files": [
+        "evals/files/conversation-settled.md"
+      ],
+      "expected_output": "With evals/files/conversation-settled.md as the session so far and no docs/agents/issue-tracker.md in the repository, the agent writes the full spec, returns it in the reply instead of publishing, and reports that repository setup blocks publication and that the setup-software-engineering-skills skill establishes the tracker contract.",
+      "expectations": [
+        "No file is created under .scratch/ or anywhere else in the repository",
+        "The reply contains the complete spec with every template section and a - [ ] acceptance-criteria checklist",
+        "The report's Locator line states that repository setup blocks publication",
+        "The reply names the setup-software-engineering-skills skill as the way to establish the tracker contract, without invoking it",
+        "The report records Category: enhancement with no role or field applied and State: none"
+      ],
+      "baseline": "Without the skill the agent noticed the repository had no code but not that it had no tracker contract: it created docs/specs/orders-csv-export.md in the repository anyway, listed non-blocking defaults (file name, date and amount format, header labels, button gating) as open points, and never mentioned that repository setup blocks publication or that setup-software-engineering-skills establishes the tracker contract. The spec had no template sections, no - [ ] checklist, and the reply gave the path as the locator instead of returning the spec in the reply.",
+      "runs": [
+        {
+          "date": "2026-10-06",
+          "host": "Claude Code",
+          "model": "claude-fable-5-1",
+          "result": "pass",
+          "notes": ""
+        }
+      ]
+    }
+  ]
+}
