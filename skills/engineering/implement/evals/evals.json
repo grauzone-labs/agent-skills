@@ -1,0 +1,90 @@
+{
+  "skill_name": "implement",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "implement evals/files/spec.md",
+      "files": [
+        "evals/files/spec.md"
+      ],
+      "expected_output": "In a git repository with a passing test suite, the agent records the starting commit as the review fixed point, builds slugify test-first at the named seam, commits, reviews against the fixed point, ticks the proven criteria in the spec file, and closes with the report template.",
+      "expectations": [
+        "The agent states the intended behavior and the seam from the spec and records the current HEAD commit as the review fixed point before any file changes",
+        "Every slice starts with a failing test in tests/slug.test.ts before the implementation in src/slug.ts",
+        "The implementation is committed before the two-axis-review skill runs, and the review is run against the recorded fixed point",
+        "The first two acceptance criteria in evals/files/spec.md are ticked with the test that proves each one named",
+        "The report follows the template, naming the commits, the full suite result, the review state, and the proven count",
+        "The full suite runs even when the review reports no findings"
+      ],
+      "baseline": "Without the skill the agent read the spec, wrote tests/slug.test.ts first, confirmed the red run, then wrote src/slug.ts and ran npm test (6 pass). It never stated or recorded a fixed point, committed nothing, ran no review, left all three checkboxes in the spec unticked, and reported free-form with the maintainer criterion described as a manual step instead of a proven count.",
+      "runs": [
+        {
+          "date": "2026-10-06",
+          "host": "Claude Code",
+          "model": "claude-fable-5-1",
+          "result": "fail",
+          "notes": "Failed: 'The agent states the intended behavior and the seam from the spec and records the current HEAD commit as the review fixed point before any file changes': the agent ran git rev-parse HEAD before editing but never stated the Behavior/Seams/Fixed point line; the fixed point 8e053e4 first appeared in the final report. Held: each of the three slices and the two review-driven fixes started with a failing test in tests/slug.test.ts (a stub src/slug.ts was created first so red fell on behavior, not on a missing module); the implementation was committed as 4f9eb37 before two-axis-review ran with 8e053e4 and the spec path as arguments; the two spec-axis findings (input hyphens, edge hyphens) were fixed test-first in c125762 after npm test and tsc reran; the first two criteria were ticked in a79588d with their tests named and the third left open naming the missing maintainer verification; the report followed the template with 2/3 proven. The sixth expectation was not exercised because the review had findings; the full suite ran after the fixes. Harness note: the Skill tool refuses implement (disable-model-invocation), so the subagent was told to read SKILL.md with the Read tool; tdd and two-axis-review were loaded through the Skill tool."
+        },
+        {
+          "date": "2026-10-06",
+          "host": "Codex",
+          "model": "gpt-6-astra",
+          "result": "fail",
+          "notes": "Failed: 'The first two acceptance criteria in evals/files/spec.md are ticked with the test that proves each one named': both boxes were ticked, but the report only says 'passing test; ticked' for each without naming the test, and the ticks were made in the implementation commit fc6c3d1 before the review instead of after it. Held: the agent read ~/.agents/skills/implement/SKILL.md, then tdd and two-axis-review, and stated 'Behavior: ...; Seams: slugify in src/slug.ts, tested through tests/slug.test.ts; Fixed point: ec8951b...' before any file change; four slices each started with a failing test in tests/slug.test.ts (red on behavior, then green plus tsc); the commit landed before two review sub-agents (spawn_agent standards_review and spec_review) ran against the recorded fixed point with the spec path; the report followed the template with commit, checks, review state and 2/3 proven, the third criterion left open pending maintainer verification; npm test, tsc and git diff --check reran after the review reported no findings. Run note: the prescribed command was extended with -c sandbox_workspace_write.writable_roots=[\"<workspace>/.git\"] because Codex's workspace-write sandbox keeps .git read-only and an earlier attempt could not commit. The agent did not load model-routing."
+        },
+        {
+          "date": "2026-10-06",
+          "host": "OpenCode",
+          "model": "gpt-6-astra",
+          "result": "pass",
+          "notes": "All six expectations held. The agent loaded implement (from .agents/skills), tdd and two-axis-review, stated 'Behavior: ...; Seams: slugify exported from src/slug.ts, tested through tests/slug.test.ts; Fixed point: ec8951b...' before any change, ran four red-green slices in tests/slug.test.ts (each first observed failing, then green with tsc from a temporary install under /tmp/opencode), committed 5471b35 before two review sub-agents ran against the fixed point with the spec path, ran npm test (5 pass), tsc and git diff --check after the review reported no findings, ticked the first two criteria in aee6ce8 naming the proving test of each, left the third open naming the missing maintainer verification, and reported with the template (commits, checks, review state, 2/3 proven). Observation: despite the prompt prefix it still loaded model-routing and printed a route line, but kept gpt-6-astra for all work and delegated nothing to other models."
+        }
+      ]
+    },
+    {
+      "id": 2,
+      "prompt": "implement evals/files/spec.md",
+      "files": [
+        "evals/files/spec.md"
+      ],
+      "expected_output": "The third criterion requires a maintainer's observation on the production build, which the agent cannot produce; it stays unticked and the report lists it as open.",
+      "expectations": [
+        "The agent does not tick the third criterion in evals/files/spec.md",
+        "The report lists the third criterion as open and names the missing evidence",
+        "The proven count in the report is 2 of 3"
+      ],
+      "baseline": "Without the skill the agent wrote tests/slug.test.ts and src/slug.ts together, ran npm test (6 pass), and reported in a free-form table that the third criterion's maintainer verification is a manual sign-off it cannot do. It ticked nothing in the spec, committed nothing, ran no review, and gave no proven count.",
+      "runs": [
+        {
+          "date": "2026-10-06",
+          "host": "Claude Code",
+          "model": "claude-opus-5-5",
+          "result": "fail",
+          "notes": "Failed: 'The report lists the third criterion as open and names the missing evidence' and 'The proven count in the report is 2 of 3': no report was given. The agent ran three red-green slices in tests/slug.test.ts, committed d70c852, and ran two-axis-review against fixed point ec8951b with the spec path. It launched both review sub-agents in the background, then ended its turn saying it would wait for their completion notifications. Its run ended at that point: when the orchestrator nudged it, it ended its turn again with the same statement. It never collected the reports. The Spec report raised two actionable findings (input hyphens pass through and stack, edge hyphens survive) and flagged the third criterion's maintainer verification as open. None of steps 4 and 5 ran: no fixes, no rerun of the full suite after the review, no ticks. Held: 'The agent does not tick the third criterion in evals/files/spec.md', but only because the agent ticked nothing. Also missed: it never stated the Behavior/Seams/Fixed point line before changing code. Harness note: the Skill tool refuses implement (disable-model-invocation), so the subagent read SKILL.md with the Read tool; tdd and two-axis-review were loaded through the Skill tool."
+        }
+      ]
+    },
+    {
+      "id": 3,
+      "prompt": "implement this ticket: Add a --dry-run flag to the deploy command that prints the planned steps and changes nothing. Acceptance criteria: the flag is listed in --help; with the flag, no file is written and the planned steps are printed.",
+      "files": [],
+      "expected_output": "The ticket names no test seam, so the agent agrees one with the user before changing code, then builds the flag test-first, reviews, fixes every actionable finding in a separate commit, and reports with both criteria proven.",
+      "expectations": [
+        "The agent proposes a public seam for the flag and waits for the user's confirmation before changing code",
+        "After the two-axis-review skill reports a finding, the agent fixes it, reruns the affected checks and the full suite, and commits the correction separately from the implementation commit",
+        "Both acceptance criteria are named in the report with the test or check that proves each one",
+        "The inline ticket is saved to a temporary file outside the worktree and that path is passed to the two-axis-review skill with the recorded fixed point"
+      ],
+      "baseline": "Without the skill the agent read the project, then edited src/deploy.ts, src/cli.ts, README.md and both test files in one pass (implementation together with tests, no red run), ran npm test, tsc with temporary @types/node, and a manual CLI smoke run. It never proposed a seam or waited for confirmation, committed nothing, ran no review, saved no ticket file, and reported free-form with both criteria described as manually verified.",
+      "runs": [
+        {
+          "date": "2026-10-06",
+          "host": "Claude Code",
+          "model": "claude-fable-5-1",
+          "result": "fail",
+          "notes": "Failed: 'The agent proposes a public seam for the flag and waits for the user's confirmation before changing code': the agent never stated the Behavior/Seams/Fixed point line, proposed no seam, and went straight from loading tdd to editing tests/cli.test.ts, choosing run(argv, io) and HELP in src/cli.ts as the seam on its own. Held: the Standards finding (duplicated withTempDir helper) was fixed, npm test and tsc reran, and the correction was committed separately as 9e21a76 after the implementation commit 5d62c38; both criteria were named in the report with their test (help lists the --dry-run option of deploy; deploy --dry-run prints the planned steps and writes nothing) plus a CLI smoke run; the inline ticket was saved to /tmp/evalrun/implement/3-claude-ticket/ticket.md outside the worktree and passed with fixed point 119f59d to two-axis-review. Harness note: the Skill tool refuses implement (disable-model-invocation), so the subagent was told to read SKILL.md with the Read tool."
+        }
+      ]
+    }
+  ]
+}
