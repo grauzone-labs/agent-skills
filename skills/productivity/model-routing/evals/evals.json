@@ -5,38 +5,42 @@
       "id": 1,
       "prompt": "Add a --dry-run flag to the CLI with tests, update the README section that lists the flags, and commit the result.",
       "files": [],
-      "expected_output": "Before any work, the agent splits the request into three deliverables and routes the flag and tests to gpt-6.1-sol, the README prose to claude-opus-5-5, and the commit to gpt-6-luna, then identifies the harness and checks each selected model before starting, recording any unavailable runtime verification as an unverified route.",
+      "expected_output": "Before any work, the agent splits the request into three deliverables and routes the flag and tests as implement to gpt-6.1-sol at high effort, the README section as write to claude-sonnet-5-5 at high effort, and the commit as operate to gpt-6-luna at high effort, then identifies the harness and checks each selected model and effort before starting, recording any unavailable runtime verification as an unverified route.",
       "expectations": [
-        "The agent classifies the deliverables before writing code or delegating",
-        "The flag implementation and its tests are routed to gpt-6.1-sol",
-        "The README update is routed to claude-opus-5-5 as prose shipped with a Development change, separately from the implementation",
-        "The commit is routed to gpt-6-luna",
-        "The agent identifies the current harness and resolves each model ID against its catalog before switching or launching",
-        "Each route records the selected model ID, verification source or gap, harness, effort setting or unsupported, and session identifier or none",
-        "When runtime verification is unavailable after explicit model selection, the agent records an unverified route; a failed selection or mismatched model takes the next applicable execution path"
+        "The agent classifies the deliverables by purpose before writing code or delegating",
+        "The flag implementation and its tests are classified as implement and routed to gpt-6.1-sol with high effort; argparse help strings and running the tests stay inside that deliverable without a model switch",
+        "The README update is classified as write and routed to claude-sonnet-5-5 with high effort, separately from the implementation, without escalation merely because it lands in a committed file",
+        "The commit is classified as operate and routed to gpt-6-luna with high effort",
+        "The agent identifies the current harness and resolves each model ID and effort setting against its catalog before switching or launching",
+        "Each route line records the category and source, the selected model ID, verification source or gap, harness, effort, and session identifier or none",
+        "When runtime verification is unavailable after explicit model and effort selection, the agent records an unverified route; a failed selection or a mismatched model or effort is corrected with a verified setting or takes the next applicable execution path"
       ],
       "baseline": "Without the skill the agent did everything itself on claude-fable-5-1: it added --dry-run to cli.py, wrote five tests, extended the README Flags list, and committed as 'feat: add --dry-run flag to list files without deleting them'. It never split the request into deliverables, named no model, did not identify the harness or consult any catalog, launched no other session, and recorded no route, so every expectation about routing to gpt-6.1-sol, claude-opus-5-5, and gpt-6-luna and about route records fell short. The orchestrator seeded the workspace with a small argparse CLI, a unittest suite, and a README with a Flags section because the evaluation supplies no fixtures.",
+      "baseline_skill_version": "1.1.0",
       "runs": [
         {
           "date": "2026-10-06",
           "host": "Claude Code",
           "model": "claude-fable-5-1",
           "result": "pass",
-          "notes": "All expectations held. The subagent read the skill, classified the three deliverables before touching code, identified the harness as Claude Code under T3 Code on claude-fable-5-1, and, because a Claude Code subagent cannot switch its own model and the Agent tool only takes Anthropic aliases, used the external codex CLI for the OpenAI routes: flag and tests on codex session 01a114bb-a801-7291-9e36-b1d386a3fb4e (rollout metadata model gpt-6.1-sol, reasoning_effort high, confirmed by the orchestrator), help text and README bullet on an Agent sub-session with alias opus whose launch result reported claude-opus-5-5, commit on codex session 01a114bd-ddbd-7a31-a60e-2fb3468cafd1 (rollout metadata gpt-6-luna, effort high). All three routes were recorded in the skill's form with model, verification source, harness, effort, and session. The first Luna commit attempt failed because the codex workspace-write sandbox keeps .git read-only; the agent resumed the same session with the sandbox bypassed instead of changing model, and commit 2923219 'feat: add --dry-run flag' landed with README, cli.py, and tests. No route needed the unverified marker. Observation: the codex workers loaded model-routing themselves and the Sol worker spawned a child thread, also on gpt-6.1-sol."
+          "notes": "All expectations held. The subagent read the skill, classified the three deliverables before touching code, identified the harness as Claude Code under T3 Code on claude-fable-5-1, and, because a Claude Code subagent cannot switch its own model and the Agent tool only takes Anthropic aliases, used the external codex CLI for the OpenAI routes: flag and tests on codex session 01a114bb-a801-7291-9e36-b1d386a3fb4e (rollout metadata model gpt-6.1-sol, reasoning_effort high, confirmed by the orchestrator), help text and README bullet on an Agent sub-session with alias opus whose launch result reported claude-opus-5-5, commit on codex session 01a114bd-ddbd-7a31-a60e-2fb3468cafd1 (rollout metadata gpt-6-luna, effort high). All three routes were recorded in the skill's form with model, verification source, harness, effort, and session. The first Luna commit attempt failed because the codex workspace-write sandbox keeps .git read-only; the agent resumed the same session with the sandbox bypassed instead of changing model, and commit 2923219 'feat: add --dry-run flag' landed with README, cli.py, and tests. No route needed the unverified marker. Observation: the codex workers loaded model-routing themselves and the Sol worker spawned a child thread, also on gpt-6.1-sol.",
+          "skill_version": "1.1.0"
         },
         {
           "date": "2026-10-07",
           "host": "Codex",
           "model": "gpt-6-astra",
           "result": "fail",
-          "notes": "Codex read ~/.agents/skills/model-routing/SKILL.md and stated the three routes before working, but then performed the Development part itself. Failed: 'The flag implementation and its tests are routed to gpt-6.1-sol': the gpt-6-astra exec session edited cli.py and tests/test_cli.py directly and never launched a gpt-6.1-sol session. Failed: 'The commit is routed to gpt-6-luna': no Luna session was started; the agent only noted that .git is read-only inside the workspace-write sandbox and left the changes uncommitted. Failed: 'Each route records the selected model ID, verification source or gap, harness, effort setting or unsupported, and session identifier or none': no route line in the skill's form appeared; the final message was prose ('Blocked by two issues') rather than the Blocked/Attempts/Needed report. Held: classification before work; the README was routed separately to claude-opus-5-5 via 'claude --model claude-opus-5-5 --effort high -p', which failed with EAI_AGAIN because the codex sandbox has no network, after which the agent asked the user whether gpt-6.1-sol may write the prose instead. README unchanged, partial --dry-run in the working tree, 3 tests passing."
+          "notes": "Codex read ~/.agents/skills/model-routing/SKILL.md and stated the three routes before working, but then performed the Development part itself. Failed: 'The flag implementation and its tests are routed to gpt-6.1-sol': the gpt-6-astra exec session edited cli.py and tests/test_cli.py directly and never launched a gpt-6.1-sol session. Failed: 'The commit is routed to gpt-6-luna': no Luna session was started; the agent only noted that .git is read-only inside the workspace-write sandbox and left the changes uncommitted. Failed: 'Each route records the selected model ID, verification source or gap, harness, effort setting or unsupported, and session identifier or none': no route line in the skill's form appeared; the final message was prose ('Blocked by two issues') rather than the Blocked/Attempts/Needed report. Held: classification before work; the README was routed separately to claude-opus-5-5 via 'claude --model claude-opus-5-5 --effort high -p', which failed with EAI_AGAIN because the codex sandbox has no network, after which the agent asked the user whether gpt-6.1-sol may write the prose instead. README unchanged, partial --dry-run in the working tree, 3 tests passing.",
+          "skill_version": "1.1.0"
         },
         {
           "date": "2026-10-07",
           "host": "OpenCode",
           "model": "gpt-6-astra",
           "result": "fail",
-          "notes": "OpenCode loaded the skill via its Skill tool and stated the routes (implementation and tests to GPT 6.1 Sol, README and help text to Claude Opus 5.5, commit to GPT 6 Luna) before any work, then ran command -v, opencode --help, opencode models, opencode session list, codex --help, claude --help, codex login status, codex agents --help, and claude auth status. Its next two tool calls, read on /home/agent/.codex and /home/agent/.claude, were rejected by the non-interactive permission system and the session ended with finish reason tool-calls, no final message, and the workspace untouched (exit code 0). Failed: 'The flag implementation and its tests are routed to gpt-6.1-sol', 'The README update is routed to claude-opus-5-5 as prose shipped with a Development change, separately from the implementation', 'The commit is routed to gpt-6-luna': no session was launched for any deliverable and nothing was produced. Failed: 'The agent identifies the current harness and resolves each model ID against its catalog before switching or launching': it listed the opencode catalog but never resolved or launched. Failed: 'Each route records the selected model ID, verification source or gap, harness, effort setting or unsupported, and session identifier or none' and the Blocked report: no route record and no report, because the run ended silently. Held: classification before writing code or delegating."
+          "notes": "OpenCode loaded the skill via its Skill tool and stated the routes (implementation and tests to GPT 6.1 Sol, README and help text to Claude Opus 5.5, commit to GPT 6 Luna) before any work, then ran command -v, opencode --help, opencode models, opencode session list, codex --help, claude --help, codex login status, codex agents --help, and claude auth status. Its next two tool calls, read on /home/agent/.codex and /home/agent/.claude, were rejected by the non-interactive permission system and the session ended with finish reason tool-calls, no final message, and the workspace untouched (exit code 0). Failed: 'The flag implementation and its tests are routed to gpt-6.1-sol', 'The README update is routed to claude-opus-5-5 as prose shipped with a Development change, separately from the implementation', 'The commit is routed to gpt-6-luna': no session was launched for any deliverable and nothing was produced. Failed: 'The agent identifies the current harness and resolves each model ID against its catalog before switching or launching': it listed the opencode catalog but never resolved or launched. Failed: 'Each route records the selected model ID, verification source or gap, harness, effort setting or unsupported, and session identifier or none' and the Blocked report: no route record and no report, because the run ended silently. Held: classification before writing code or delegating.",
+          "skill_version": "1.1.0"
         }
       ]
     },
@@ -44,23 +48,26 @@
       "id": 2,
       "prompt": "Use gpt-6-luna to write the design specification for the new cache layer, and also fix the failing test in cache_test.py.",
       "files": [],
-      "expected_output": "The agent honours the user's model choice for the specification only, routes the test fix to gpt-6.1-sol, and runs each deliverable on its selected model, marking the route unverified when runtime verification is unavailable.",
+      "expected_output": "The agent honours the user's model choice for the specification only, running it on gpt-6-luna with its category's high effort, routes the failing test with an unknown cause as debug to gpt-6.1-sol at high effort, and runs each deliverable on its selected model and effort, marking the route unverified when runtime verification is unavailable.",
       "expectations": [
-        "The specification is written on gpt-6-luna because the user chose it explicitly",
-        "The override is applied only to the specification; the test fix is routed to gpt-6.1-sol",
-        "Any escalation of the test fix to gpt-6-astra meets a Development escalation condition and is explained to the user",
-        "Each execution session has the assigned model explicitly selected, with runtime verification or a recorded verification gap",
+        "The specification is written on gpt-6-luna because the user chose it explicitly; its route line names the source user override and uses high effort from its category row because the user named no effort",
+        "The override is applied only to the specification; the failing test, whose cause is unknown, is classified as debug and routed to gpt-6.1-sol with high effort, including its fix",
+        "The specification is never escalated away from gpt-6-luna; if it fails, the agent reports the failure and asks the user",
+        "Any escalation of the test fix to gpt-6.1-sol with xhigh effort meets a high-complexity or failure condition and is explained to the user before it starts",
+        "Each execution session has the assigned model and effort explicitly selected, with runtime verification or a recorded verification gap",
         "If no execution path reaches a model, the agent reports the attempted harnesses and failures and asks the user to provide access or choose an available model",
-        "When reusing a session, including a focused follow-up or external CLI session, the agent checks every suitability criterion before resuming it"
+        "When reusing a session, including a focused follow-up or external CLI session, the agent checks every suitability criterion, including the assigned model and effort, before resuming it"
       ],
       "baseline": "Without the skill the agent honoured the explicit model choice for the specification by calling 'opencode run -m openai/gpt-6-luna' from Bash, which wrote docs/cache-layer-design.md, and fixed the failing test_get_refreshes_recency itself on claude-fable-5-1 by adding move_to_end to LRUCache.get. It never classified the deliverables or routed the test fix to gpt-6.1-sol, did not identify the harness, verified no model from session metadata, checked no session for reuse, and recorded no route; the opencode worker also briefly reverted the fix because its handoff did not fence off cache.py, and the agent reapplied it. The orchestrator seeded the workspace with cache.py and a cache_test.py whose recency test fails because the evaluation supplies no fixtures.",
+      "baseline_skill_version": "1.1.0",
       "runs": [
         {
           "date": "2026-10-06",
           "host": "Claude Code",
           "model": "claude-fable-5-1",
           "result": "pass",
-          "notes": "All expectations held. The subagent split the task in two, identified the harness as Claude Code under T3 Code on claude-fable-5-1, noted that a Claude Code subagent cannot switch its own model and that the Agent tool accepts only Anthropic models, and used the external codex CLI: the specification on session 01a114ba-f955-7763-90a9-c484714be49c (rollout metadata model gpt-6-luna, effort high, recorded as the user's override of the Fable route) and the test fix on session 01a114bb-0fbf-7122-8fec-4e2e6c564cef (rollout metadata gpt-6.1-sol, effort high), both confirmed by the orchestrator. No escalation to gpt-6-astra. Both routes were recorded in the skill's form with the launch header as verification source. The Luna worker loaded model-routing itself and first reported Blocked because the handoff omitted the user's explicit model choice; the agent resumed that same session with the override stated, a reuse of its own idle session on the same repository, topic, and model. Results: cache.py gained move_to_end in get, 3 tests pass, docs/cache-layer-spec.md written, nothing committed."
+          "notes": "All expectations held. The subagent split the task in two, identified the harness as Claude Code under T3 Code on claude-fable-5-1, noted that a Claude Code subagent cannot switch its own model and that the Agent tool accepts only Anthropic models, and used the external codex CLI: the specification on session 01a114ba-f955-7763-90a9-c484714be49c (rollout metadata model gpt-6-luna, effort high, recorded as the user's override of the Fable route) and the test fix on session 01a114bb-0fbf-7122-8fec-4e2e6c564cef (rollout metadata gpt-6.1-sol, effort high), both confirmed by the orchestrator. No escalation to gpt-6-astra. Both routes were recorded in the skill's form with the launch header as verification source. The Luna worker loaded model-routing itself and first reported Blocked because the handoff omitted the user's explicit model choice; the agent resumed that same session with the override stated, a reuse of its own idle session on the same repository, topic, and model. Results: cache.py gained move_to_end in get, 3 tests pass, docs/cache-layer-spec.md written, nothing committed.",
+          "skill_version": "1.1.0"
         }
       ]
     },
@@ -68,22 +75,211 @@
       "id": 3,
       "prompt": "Restructure the service layer across all four packages so they share one repository interface, and label the issues that came in overnight.",
       "files": [],
-      "expected_output": "The agent escalates the cross-package refactor to gpt-6-astra with an explanation, routes the labelling to gpt-6-luna, and sends any defect the labelling uncovers back to Development.",
+      "expected_output": "The agent classifies the cross-package refactor as implement, escalates it to gpt-6.1-sol at xhigh effort with an explanation because it needs broad cross-module context, routes the labelling as operate to gpt-6-luna at high effort, and routes any defect the labelling uncovers as its own deliverable.",
       "expectations": [
-        "The refactor is classified as Development and escalated to gpt-6-astra because it needs broad cross-module context",
-        "The escalation is explained to the user before the refactor starts",
-        "The issue labelling is routed to gpt-6-luna as routine triage",
-        "A defect found while labelling is treated as Development and routed to gpt-6.1-sol",
+        "The refactor is classified as implement, not architect, because its result is code",
+        "The refactor is escalated to gpt-6.1-sol with xhigh effort because it needs broad cross-module context, and the escalation is explained to the user before the refactor starts",
+        "The issue labelling is classified as operate and routed to gpt-6-luna with high effort",
+        "A defect found while labelling becomes a new deliverable: debug on gpt-6.1-sol with high effort when its cause is unknown, implement when it is known",
         "If a model not found error occurs, the agent checks the catalog and retries only with a newly verified identifier or setting; otherwise it proceeds to the next applicable path"
       ],
       "baseline": "Without the skill the agent did both parts itself on claude-fable-5-1: it wrote packages/repository.py with a Repository protocol and InMemoryRepository, rewired all four services to constructor injection, deleted the three package-specific stores, extended the tests, and labelled issues #3 to #6 in grauzone-dev/skill-evals with enhancement, documentation, and good first issue via gh. It never classified the refactor as Development, did not escalate to gpt-6-astra or explain any escalation, did not route the labelling to gpt-6-luna, launched no other session, and recorded no route. The orchestrator built the workspace from a clone of grauzone-dev/skill-evals (live tracker with four unlabelled issues from 2026-10-06) plus four locally committed service packages with divergent storage access, because the evaluation supplies no fixtures.",
+      "baseline_skill_version": "1.1.0",
       "runs": [
         {
           "date": "2026-10-06",
           "host": "Claude Code",
           "model": "claude-fable-5-1",
           "result": "fail",
-          "notes": "Failed: 'The escalation is explained to the user before the refactor starts': the subagent's only text before launching the refactor was 'Ich lade zuerst den model-routing-Skill'; it then ran codex exec -m gpt-6-astra for the refactor and codex exec -m gpt-6-luna for the labelling in the same step, and the explanation (cross-package architecture refactor needs broad module context, hence Astra instead of GPT 6.1 Sol) appeared only in the final report after both workers had finished. A subagent can still emit text before a launch, so the limitation is partial. Every other expectation held: the refactor was classified as Development and ran on codex session 01a114c8-0ec1-7823-bd04-17d8f0f78222 (rollout metadata model gpt-6-astra, effort high); the labelling ran on codex session 01a114c8-320c-7aa0-9624-97ab208aa647 as routine triage and applied enhancement, good first issue, and documentation to #3 to #6 only, leaving the issues #12 to #17 that another process created during the run untouched; no defect surfaced among those four, so the Development hand-back was not exercised; no model-not-found error occurred, but the first 'codex exec resume' ran on the default gpt-6.1-sol without network, the agent read that from the header, and retried only with the verified -m gpt-6-luna and effort config. The packages/README.md prose was first bundled into the Astra handoff, which Astra paused as not its deliverable, and was then routed to an Agent sub-session on claude-opus-5-5; three routes were recorded in the skill's form. A Claude Code subagent cannot switch its own model, so all OpenAI routes used the external codex fallback. Refactor result: shared Repository ABC with get, save, list, per-package in-memory repositories, 16 tests passing, nothing committed; the orchestrator removed the labels afterwards to restore the sandbox."
+          "notes": "Failed: 'The escalation is explained to the user before the refactor starts': the subagent's only text before launching the refactor was 'Ich lade zuerst den model-routing-Skill'; it then ran codex exec -m gpt-6-astra for the refactor and codex exec -m gpt-6-luna for the labelling in the same step, and the explanation (cross-package architecture refactor needs broad module context, hence Astra instead of GPT 6.1 Sol) appeared only in the final report after both workers had finished. A subagent can still emit text before a launch, so the limitation is partial. Every other expectation held: the refactor was classified as Development and ran on codex session 01a114c8-0ec1-7823-bd04-17d8f0f78222 (rollout metadata model gpt-6-astra, effort high); the labelling ran on codex session 01a114c8-320c-7aa0-9624-97ab208aa647 as routine triage and applied enhancement, good first issue, and documentation to #3 to #6 only, leaving the issues #12 to #17 that another process created during the run untouched; no defect surfaced among those four, so the Development hand-back was not exercised; no model-not-found error occurred, but the first 'codex exec resume' ran on the default gpt-6.1-sol without network, the agent read that from the header, and retried only with the verified -m gpt-6-luna and effort config. The packages/README.md prose was first bundled into the Astra handoff, which Astra paused as not its deliverable, and was then routed to an Agent sub-session on claude-opus-5-5; three routes were recorded in the skill's form. A Claude Code subagent cannot switch its own model, so all OpenAI routes used the external codex fallback. Refactor result: shared Repository ABC with get, save, list, per-package in-memory repositories, 16 tests passing, nothing committed; the orchestrator removed the labels afterwards to restore the sandbox.",
+          "skill_version": "1.1.0"
+        }
+      ]
+    },
+    {
+      "id": 4,
+      "prompt": "Research how other CLI tools order config file precedence and recommend an order for ours, write the specification for the config loader, write a script that lists every config key used in examples/ and run it to post its output as a comment on issue #12, and translate docs/config.de.md into English as docs/config.md.",
+      "files": [],
+      "expected_output": "The agent keeps the research inside one analyze deliverable, routes the specification as plan, separates writing the script from running it, and launches the translation on claude-sonnet-5-5 at medium effort.",
+      "expectations": [
+        "The precedence research and the recommendation form one analyze deliverable routed to gpt-6.1-sol with high effort; no separate research deliverable or model switch is created for the fact gathering",
+        "The config loader specification is classified as plan and routed to claude-opus-5-5 with high effort",
+        "Writing the script is classified as implement on gpt-6.1-sol with high effort, and running it to post the comment is a separate operate deliverable on gpt-6-luna with high effort",
+        "The translation is classified as translate and launched on claude-sonnet-5-5 with medium effort; the launch and route line keep medium, or record the effort as unsupported, instead of raising it to high",
+        "No deliverable is escalated without a stated high-complexity or failure condition",
+        "Every route line names the category and the source built-in"
+      ],
+      "baseline": "No baseline recorded: this evaluation was added in skill version 1.2.0 and has not been run without the skill. The previous 1.1.0 skill did not cover purpose categories such as analyze, plan, and translate, or per-category effort settings."
+    },
+    {
+      "id": 5,
+      "prompt": "Write an ADR proposing how to split the billing module into separate invoicing and payments packages, review PR #18 that adds retry logic to the payment client, and rename the misspelled recieve_payment function across the codebase, updating its docstrings.",
+      "files": [],
+      "expected_output": "The agent routes the ADR as architect, the PR review as review without fixing its findings, and the rename with its docstrings as one implement deliverable.",
+      "expectations": [
+        "The ADR is classified as architect and routed to claude-opus-5-5 with high effort; storing it as a committed Markdown file is not given as an escalation reason",
+        "The PR review is classified as review and routed to claude-opus-5-5 with high effort; it reports findings, and any fix the agent proposes becomes a separate debug or implement deliverable",
+        "The rename is classified as implement and routed to gpt-6.1-sol with high effort, with the docstring updates inside the same deliverable rather than a separate write deliverable",
+        "Reading code and running tests for the rename stay in its session without a model switch",
+        "Each route line records the category, source, model, verification, harness, effort, and session"
+      ],
+      "baseline": "No baseline recorded: this evaluation was added in skill version 1.2.0 and has not been run without the skill. The previous 1.1.0 skill did not cover the architect and review categories or the rule that docstrings inside changed code stay with that code."
+    },
+    {
+      "id": 6,
+      "prompt": "Add a --since filter to the export command with tests, compare the two retry libraries vendored under vendor/ and recommend one, fix the known off-by-one in pagination.py with claude-opus-5-5, and add a CHANGELOG entry.",
+      "files": [
+        "evals/files/overrides/docs/agents/model-routing.md"
+      ],
+      "expected_output": "With a repository config that overrides implement to claude-fable-5-1 and analyze to gpt-6-astra, the agent reads the config before routing, applies the overrides, lets the user choice of claude-opus-5-5 supersede the config for the pagination fix only, and keeps the CHANGELOG entry on its built-in route.",
+      "expectations": [
+        "The agent reads docs/agents/model-routing.md at the repository root before stating any route",
+        "The --since filter is classified as implement and routed to claude-fable-5-1 with high effort, with the source repository override",
+        "The library comparison is classified as analyze and routed to gpt-6-astra with xhigh effort, with the source repository override",
+        "The pagination fix runs on claude-opus-5-5 with high effort, the effort of the resolved implement row, with the source user override; the user choice supersedes the repository row only for that fix",
+        "The CHANGELOG entry is classified as write and routed to the built-in claude-sonnet-5-5 with high effort, because the config has no write row",
+        "No override route is escalated automatically: rows with escalation none stay on their route, and a failure on the user-chosen model is reported to the user",
+        "The config has no Subscription burner line, so the burner stays disabled and no route names subscription burner",
+        "The config has no Model access line, so the access is auto and taken from the path that actually runs each deliverable"
+      ],
+      "baseline": "No baseline recorded: this evaluation was added in skill version 1.2.0 and has not been run without the skill. The previous 1.1.0 skill did not cover repository override files, user overrides layered over them, or escalation none."
+    },
+    {
+      "id": 7,
+      "prompt": "Review PR #7 and summarize the discussion in issue #3 for the team.",
+      "files": [
+        "evals/files/invalid/docs/agents/model-routing.md"
+      ],
+      "expected_output": "With a repository config that has an invalid Subscription burner value, two review rows, an unknown docs category, and a transform row without effort, the agent reports each invalid line, asks how to correct it, holds the review until the user answers, and routes the summary on its built-in route.",
+      "expectations": [
+        "The agent reports the Subscription burner value maybe, the duplicate review rows, the unknown category docs, and the transform row with an empty effort cell, each with its problem",
+        "The agent asks the user a targeted question on how to correct the invalid rows",
+        "The review deliverable is not routed to either review row or to the built-in review route until the user answers",
+        "The summary is classified as summarize and routed to the built-in claude-haiku-5-5 with high effort, because no invalid row names summarize"
+      ],
+      "baseline": "No baseline recorded: this evaluation was added in skill version 1.2.0 and has not been run without the skill. The previous 1.1.0 skill did not cover repository override files, the subscription burner setting, or their validation."
+    },
+    {
+      "id": 8,
+      "prompt": "Restructure the storage layer across all four packages behind one shared interface, then write an ADR redesigning the plugin loading architecture across the same packages, review PR #9, fix the typo in the README intro, and use claude-sonnet-5-5 for the migration plan of the storage layer.",
+      "files": [
+        "evals/files/burner/docs/agents/model-routing.md"
+      ],
+      "expected_output": "With the subscription burner enabled and a review override in the repository config, on Claude Code signed in with a claude.ai subscription, the agent starts only the complex storage refactor on claude-fable-5-1, keeps routine, overridden, and user-chosen deliverables on their routes, continues the refactor on claude-opus-5-5 at the same effort when the simulated Fable usage limit message appears without a reset time, and routes the later complex ADR straight to claude-opus-5-5.",
+      "expectations": [
+        "The agent reads docs/agents/model-routing.md, notes Subscription burner: enabled, and confirms subscription access from auth status or session metadata, reporting only the path and billing kind without tokens, email addresses, or account identifiers",
+        "The storage refactor is classified as implement, meets the high-complexity condition, and starts on claude-fable-5-1 with xhigh effort, the built-in implement escalation effort, with the source subscription burner",
+        "The README typo fix is classified as write and stays on claude-sonnet-5-5 with high effort; the review stays on the repository override gpt-6.1-sol with high effort; the migration plan stays on the user-chosen claude-sonnet-5-5 with high effort; none of them uses the burner",
+        "When Fable reports You've reached your Fable limit, the agent tells the user before switching, records the failed Fable attempt, and continues the same refactor on claude-opus-5-5 with xhigh effort on the same Claude Code subscription path, with the source burner fallback",
+        "The handoff to Opus names the changed files and diff, completed actions, and open checks; the Opus session verifies them against the current files, repeats no completed commit or other action, and owns the files only after the Fable session has stopped",
+        "The ADR is classified as architect, meets the high-complexity condition, and goes straight to claude-opus-5-5 with xhigh effort without a new Fable attempt, because the session recorded the Fable limit on this path and no reset time was stated",
+        "The agent invents no reset time, sets no timer or scheduled retry, writes no quota state into the repository, and never switches to API billing, buys credits, or turns on paid overage",
+        "The config has no Model access line, so auto resolves to provider-native from Claude Code, and every route line names via provider-native"
+      ],
+      "baseline": "No baseline recorded: this evaluation was added in skill version 1.2.0 and has not been run without the skill. The previous 1.1.0 skill did not cover the subscription burner, usage-limit fallback, or per-session limit state."
+    },
+    {
+      "id": 9,
+      "prompt": "Find out why the order sync between the billing, inventory, and shipping services drops events under load and fix it, and add a CHANGELOG entry for the fix.",
+      "files": [
+        "evals/files/burner/docs/agents/model-routing.md"
+      ],
+      "expected_output": "With the subscription burner enabled on a confirmed subscription path, the agent starts the cross-service defect on claude-fable-5-1 and treats a simulated HTTP 429 rate-limit response and a later unsolved test failure as ordinary failures, not as a usage limit.",
+      "expectations": [
+        "The cross-service defect is classified as debug, meets the high-complexity condition, and starts on claude-fable-5-1 with xhigh effort, with the source subscription burner",
+        "The CHANGELOG entry is classified as write and stays on claude-sonnet-5-5 with high effort",
+        "When the simulated Fable launch returns HTTP 429 with a retry-after header, the agent handles it under the execution paths, does not call it a usage limit, records no Fable limit state, and does not switch to claude-opus-5-5 as burner fallback",
+        "When the Fable session finishes with the defect still unresolved, the agent reports the failure and asks the user instead of escalating the burner route again or claiming a usage limit",
+        "No route switches to API billing or another provider to avoid the failure"
+      ],
+      "baseline": "No baseline recorded: this evaluation was added in skill version 1.2.0 and has not been run without the skill. The previous 1.1.0 skill did not cover the subscription burner or the difference between usage limits and other failures."
+    },
+    {
+      "id": 10,
+      "prompt": "Compare the three queue backends used across all our services and recommend one to standardize on, using medium effort. Also fix the flaky assertion in test_retry.py.",
+      "files": [
+        "evals/files/burner/docs/agents/model-routing.md"
+      ],
+      "expected_output": "With the subscription burner enabled but the Claude CLI authenticated only through an API key, the agent applies standard routing, records why the burner was not applied, keeps the user-chosen medium effort through normal escalation, and leaves the unrelated test fix on its built-in route.",
+      "expectations": [
+        "The agent determines from auth status that Claude access is API-billed, without printing the key, and does not apply the burner",
+        "The recommendation is classified as analyze, meets the high-complexity condition, and escalates to claude-opus-5-5 with medium effort, because the user chose medium, with the route line noting burner not applied and the API billing reason",
+        "The agent makes no claude-fable-5-1 attempt",
+        "The flaky assertion fix is classified as debug or implement and runs on gpt-6.1-sol with high effort, unaffected by the burner setting"
+      ],
+      "baseline": "No baseline recorded: this evaluation was added in skill version 1.2.0 and has not been run without the skill. The previous 1.1.0 skill did not cover the subscription burner, billing checks, or a user effort kept through escalation."
+    },
+    {
+      "id": 11,
+      "prompt": "Continue in this session: write the architecture document that redesigns the event pipeline module boundaries across all services, with max effort.",
+      "files": [
+        "evals/files/burner/docs/agents/model-routing.md"
+      ],
+      "expected_output": "In a resumed session that recorded a Fable usage limit on the Claude Code subscription path with a provider-stated reset time that has now passed, the agent retries claude-fable-5-1 at max effort. After a simulated second Fable limit it continues on claude-opus-5-5 at max effort, and when Opus also reports a usage limit it reports Blocked without returning to Fable.",
+      "expectations": [
+        "The architecture document is classified as architect, meets the high-complexity condition, and uses max effort because the user chose it",
+        "Because the provider-stated reset time has passed, the agent makes one new Fable attempt instead of routing straight to claude-opus-5-5",
+        "On the second Fable usage limit, the agent tells the user, records the attempt and the newly stated reset time, and continues on claude-opus-5-5 with max effort on the same subscription path",
+        "When claude-opus-5-5 also reports a usage limit, the agent reports Blocked: the deliverable; Attempts: each path and failure; Needed: access or a model choice, and makes no further Fable or Opus attempt",
+        "The agent sets no timer or scheduled retry and writes no quota state into the repository"
+      ],
+      "baseline": "No baseline recorded: this evaluation was added in skill version 1.2.0 and has not been run without the skill. The previous 1.1.0 skill did not cover the subscription burner, provider reset times, or a Blocked report after both burner models reach their limits."
+    },
+    {
+      "id": 12,
+      "prompt": "Turn on the subscription burner for this session. Restructure the storage layer across all four packages behind one shared interface, and fix the typo in the README intro.",
+      "files": [
+        "evals/files/copilot/docs/agents/model-routing.md"
+      ],
+      "expected_output": "In OpenCode with a GitHub Copilot provider whose catalog lists github-copilot/claude-sonnet-5.5 and github-copilot/gpt-6.1-sol, with the claude and codex CLIs also installed and signed in, and a config with Model access: github-copilot and Subscription burner: enabled, the agent resolves each model to its confirmed Copilot ID, routes normally without the burner, and launches no provider-native CLI.",
+      "expectations": [
+        "The agent reads Model access: github-copilot and runs every route through the Copilot provider or the GitHub Copilot CLI",
+        "The burner is not applied despite the file and the session instruction; the refactor route line records burner not applied: GitHub Copilot not supported, and a Copilot subscription is not treated as qualifying",
+        "The storage refactor is classified as implement, meets the high-complexity condition, and escalates normally to gpt-6.1-sol with xhigh effort, resolved to the confirmed Copilot ID github-copilot/gpt-6.1-sol",
+        "The README fix is classified as write and runs on claude-sonnet-5-5 with high effort, resolved to the confirmed Copilot ID github-copilot/claude-sonnet-5.5; the route line shows the catalog ID and via github-copilot",
+        "The agent never guesses an alias or substitutes another model version; a model without a confirmed Copilot catalog entry is reported as a failed lookup or Blocked",
+        "The agent launches neither claude nor codex, passes no Copilot ID to them, and does not switch to provider-native Claude to make the burner apply"
+      ],
+      "baseline": "No baseline recorded: this evaluation was added in skill version 1.2.0 and has not been run without the skill. The previous 1.1.0 skill did not cover model access settings, Copilot catalog resolution, or the subscription burner."
+    },
+    {
+      "id": 13,
+      "prompt": "Summarize the discussion in issue #3 for the team.",
+      "files": [
+        "evals/files/invalid-access/docs/agents/model-routing.md"
+      ],
+      "expected_output": "With a config whose Model access value is copilot, the agent reports the invalid line, asks which access to use, and holds the summary until the user answers.",
+      "expectations": [
+        "The agent reports Model access: copilot as invalid because the value is not provider-native, github-copilot, or auto",
+        "The agent asks the user which model access to use instead of guessing github-copilot",
+        "The summary is not routed or launched until the user answers"
+      ],
+      "baseline": "No baseline recorded: this evaluation was added in skill version 1.2.0 and has not been run without the skill. The previous 1.1.0 skill did not cover model access settings or their validation."
+    },
+    {
+      "id": 14,
+      "prompt": "Read-only routing simulation: apply the model-routing skill to four independent fixtures and return route decisions, efforts, catalog IDs, execution paths, and follow-up actions. Use only the fixture evidence; perform no task work, invoke no CLI, change no account, and invent no discovery results. Fixture catalog IDs are synthetic test data. A. Config: Model access: provider-native, Subscription burner: enabled, one row review | gpt-6.1-sol | high | none | none. Harness Claude Code; auth confirms a claude.ai subscription; Fable and Opus canonical IDs confirmed; all needed efforts supported. Deliverables: restructure storage across four packages behind one interface (complex), fix a README typo, review a small PR, and a cross-module migration plan explicitly requested on claude-sonnet-5-5 with medium effort. The storage task on Fable has edited storage.py, committed that work, and has an open integration-test check when the provider says \"You've reached your Fable limit\" with no reset time; state the continuation and handoff. Later in the session, a complex ADR redesigning plugin module boundaries arrives with no override. B. Config: Model access: github-copilot, Subscription burner: enabled, no rows; the user also switches the burner on for this session. Harness Codex with no Copilot provider or model switch; Copilot CLI installed and authenticated; native claude and codex CLIs also present. Copilot catalog: gpt-6.1-sol as gh-fixture-sol61, claude-opus-5-5 as gh-fixture-opus55, claude-fable-5-1 as gh-fixture-fable51; xhigh supported. Task: a cross-package maintained-code refactor needing broad context. C. Config: provider-native, burner enabled, no rows. Claude Code is API-key billed with no claude.ai subscription path; the user asks for a broad cross-service queue-backend recommendation with medium effort; the catalog confirms all canonical models. D. Config: provider-native, burner enabled, claude.ai subscription confirmed, no rows. A complex unknown-cause cross-service bug runs on Fable at xhigh. Evaluate independently: an HTTP 429 requests-per-minute throttle with retry-after; unresolved test failures; a true Fable usage limit followed by a true Opus usage limit. Say whether an effort, a model-version alias, or paid API can be substituted silently.",
+      "files": [],
+      "expected_output": "The agent routes each fixture by the skill alone: burner only for high-complexity built-in routes on a confirmed claude.ai subscription, Opus fallback with a full handoff on a real Fable limit and remembered limit state afterwards, no burner under GitHub Copilot or API billing, user effort kept through escalation, and no fallback, limit state, or silent substitution for throttles and unsolved failures.",
+      "expectations": [
+        "The agent stays within the fixtures: it runs no CLI, switches no model, performs no task work, and marks facts the fixtures do not supply as missing instead of inventing them",
+        "A: the storage restructure is implement, high-complexity, on claude-fable-5-1 with xhigh effort and source subscription burner; the README typo is write on claude-sonnet-5-5 with high effort; the review keeps the repository override gpt-6.1-sol with high effort; the migration plan keeps the user override claude-sonnet-5-5 with medium effort and no burner",
+        "A: on You've reached your Fable limit, the agent tells the user, records the attempt, and continues on claude-opus-5-5 with xhigh effort on the same Claude Code subscription path; the handoff names the storage.py edits, the existing commit that must not be repeated, and the open integration-test check, verified against the current files, with no paid API",
+        "A: the later ADR is architect and high-complexity and goes straight to claude-opus-5-5 with xhigh effort and source burner fallback, without a new Fable attempt, timer, estimated reset, or repository state",
+        "B: the refactor is implement and high-complexity; the burner is not applied because GitHub Copilot is not supported, despite the session switch and Copilot authentication; it escalates normally to gpt-6.1-sol with xhigh effort, resolved to the fixture ID gh-fixture-sol61 and run through the GitHub Copilot CLI, never through native claude or codex",
+        "C: the recommendation is analyze and high-complexity; the burner is not applied because of API-key billing; it escalates normally to claude-opus-5-5 with the user-chosen medium effort, and no Fable attempt is made",
+        "D: the 429 throttle is no usage limit and causes no fallback or limit state; unresolved tests are reported to the user without further escalation; the true Fable limit falls back to claude-opus-5-5 with xhigh effort and records the limit state; the following Opus limit ends in a Blocked report without returning to Fable; no effort, model-version alias, or paid API is substituted silently"
+      ],
+      "baseline": "No baseline recorded: this evaluation was added in skill version 1.3.0 and has no simulation without the skill. The previous 1.1.0 skill had no categories, burner, or model access settings to simulate.",
+      "runs": [
+        {
+          "date": "2026-10-09",
+          "host": "Claude Code",
+          "model": "claude-opus-5-5",
+          "effort": "high",
+          "skill_version": "1.2.0",
+          "result": "pass",
+          "notes": "Session 95b48bae-264b-4cdb-bae8-c7dabbbfec89. Simulation only: the agent had only the Read tool, read SKILL.md, and returned route decisions; no model ran any fixture work, no CLI was invoked, and no account or quota was touched. The gh-fixture IDs are synthetic fixture data, not real GitHub Copilot catalog IDs. All expectations held: A routed the storage task to Fable xhigh, the typo to Sonnet high, the review to the Sol high override, and the migration plan to the user-chosen Sonnet medium; on the Fable limit it continued on Opus xhigh on the same subscription path with a handoff naming storage.py, the existing commit not to repeat, and the open integration test; the later ADR went straight to Opus xhigh as burner fallback with no timer or reset estimate. B refused the burner under Copilot and routed Sol xhigh as gh-fixture-sol61 through the Copilot CLI, never native CLIs. C kept medium through escalation to Opus without Fable. D treated the 429 as no limit, reported unresolved tests, fell back on the true Fable limit, and reported Blocked after the Opus limit without returning to Fable. The agent marked unsupplied facts such as the Sonnet catalog confirmation, codex availability, sessions, and sandbox checks as missing. Its extra remarks on 429 retry handling, saved Opus limits for ordinary escalation, and plan versus architect for a migration plan were noted, not adopted; its question about the source label for remembered limits is answered in 1.3.0."
         }
       ]
     }

@@ -11,7 +11,7 @@
         "Section A leads with GitHub as the recommended tracker and the PRs-as-a-request-surface flag is written as no without the agent asking about it",
         "Section B is a single question whether to keep the default triage labels, recommending yes",
         "Section C is written as single-context without a question",
-        "The agent shows the ## Agent skills block and the full contents of docs/agents/issue-tracker.md, docs/agents/domain.md, and docs/agents/triage-labels.md before writing any file",
+        "The agent shows the ## Agent skills block and the full contents of docs/agents/issue-tracker.md, docs/agents/domain.md, docs/agents/triage-labels.md, and, when model-routing is installed, docs/agents/model-routing.md before writing any file",
         "CLAUDE.md gains the ## Agent skills block and no AGENTS.md is created",
         "docs/agents/issue-tracker.md keeps the GitHub template's Conventions, Implementation operations including Tick an acceptance criterion, and Wayfinding operations sections",
         "The ### Model routing sub-block appears first and only when model-routing is installed and CLAUDE.md carries no other model-routing instruction, so the routing pointer appears exactly once",
@@ -19,27 +19,31 @@
         "The agent opens with the progress checklist and closes with the report template naming each written file and its consumers"
       ],
       "baseline": "Without the skill the agent read CLAUDE.md, package.json, and the user-wide skill directories, then wrote a new AGENTS.md with a trigger-to-skill table and a default workflow, and added an @AGENTS.md import to CLAUDE.md. It never ran git remote -v, proposed no issue tracker, asked no triage question, wrote nothing under docs/agents/, did not resolve the target branch or merge methods, and wrote files without showing a draft or asking for approval.",
+      "baseline_skill_version": "1.1.0",
       "runs": [
         {
           "date": "2026-10-06",
           "host": "Claude Code",
           "model": "claude-fable-5-1",
           "result": "fail",
-          "notes": "\"The agent shows the ## Agent skills block and the full contents of docs/agents/issue-tracker.md, docs/agents/domain.md, and docs/agents/triage-labels.md before writing any file\": the draft showed the block in full but described the three docs files by reference (\"the complete GitHub template with these setup values filled in\", \"table unchanged\", \"domain.md unchanged\") instead of showing their contents. Every other expectation held: exploration covered remote, both instruction files, docs/agents/, .scratch/, and the monorepo signals; gh api resolved main and the three merge methods before the draft; one triage question; single-context without asking; CLAUDE.md gained the block with ### Model routing first and once; checklist opened and report template closed. The Skill tool refused the load (disable-model-invocation), so the agent read SKILL.md and its references directly."
+          "notes": "\"The agent shows the ## Agent skills block and the full contents of docs/agents/issue-tracker.md, docs/agents/domain.md, and docs/agents/triage-labels.md before writing any file\": the draft showed the block in full but described the three docs files by reference (\"the complete GitHub template with these setup values filled in\", \"table unchanged\", \"domain.md unchanged\") instead of showing their contents. Every other expectation held: exploration covered remote, both instruction files, docs/agents/, .scratch/, and the monorepo signals; gh api resolved main and the three merge methods before the draft; one triage question; single-context without asking; CLAUDE.md gained the block with ### Model routing first and once; checklist opened and report template closed. The Skill tool refused the load (disable-model-invocation), so the agent read SKILL.md and its references directly.",
+          "skill_version": "1.1.0"
         },
         {
           "date": "2026-10-06",
           "host": "OpenCode",
           "model": "gpt-6-astra",
           "result": "pass",
-          "notes": ""
+          "notes": "",
+          "skill_version": "1.1.0"
         },
         {
           "date": "2026-10-06",
           "host": "Codex",
           "model": "gpt-6-astra",
           "result": "pass",
-          "notes": ""
+          "notes": "",
+          "skill_version": "1.1.0"
         }
       ]
     },
@@ -105,20 +109,165 @@
       "expectations": [
         "Section C is settled as multi-context from the existing CONTEXT-MAP.md without a question",
         "The existing model-routing instruction in AGENTS.md stays where it is and the drafted ## Agent skills block has no ### Model routing sub-block",
+        "Because model-routing is installed, the agent first asks the model access question, then shows all twelve built-in routing rows from the installed model-routing skill before asking the routing mode and, under provider-native access, the subscription burner question with the host's structured question tool; the draft includes docs/agents/model-routing.md with its Model access and Subscription burner lines",
         "Before showing the draft, the agent resolves merge_method from glab api projects/:id, or reports the failed lookup and proceeds only when the user accepts a labelled gap with the merge operations blocked",
         "docs/agents/triage-labels.md ends with the instruction to edit the Label in this tracker column",
         "docs/agents/domain.md names <context>/docs/adr/ beside each context's CONTEXT.md rather than a fixed src/ path",
         "The GitLab frontier query filters state=opened, paginates, and drops tickets with a link_type is_blocked_by link to an open issue; the fallback Blocked by line sits after the Part of and Wayfinding order lines",
-        "The final report names each written file with its consumers, any verification gap, and when to rerun setup"
+        "The final report names each written file with its consumers, including docs/agents/model-routing.md read by model-routing, any verification gap, and when to rerun setup"
       ],
       "baseline": "Without the skill the agent read the remote, AGENTS.md, and CONTEXT-MAP.md, then drafted four new AGENTS.md sections (Work tracking, a GitLab scoped-label table of its own invention, an Engineering workflow, Domain model) and asked three questions before writing them. It never ran a glab merge_method lookup or reported one as a gap, wrote nothing under docs/agents/ (no issue-tracker.md, triage-labels.md, or domain.md, so no wayfinding operations or frontier query), used labels unrelated to the seven canonical roles, and gave no closing report of files with consumers or when to rerun; it did leave the existing model-routing section untouched and treated the repo as multi-context without asking.",
+      "baseline_skill_version": "1.1.0",
       "runs": [
         {
           "date": "2026-10-06",
           "host": "Claude Code",
           "model": "claude-opus-5-5",
           "result": "pass",
-          "notes": "Judged from the recorded draft of an interrupted run; the agent stopped at the approval step because it would not accept an agent-relayed approval, so nothing was written. glab is not installed here and the fixture project does not exist, so the merge_method lookup could not succeed. Skipped, not judgeable: \"The final report names each written file with its consumers, any verification gap, and when to rerun setup\" (no write, no report). The six judgeable expectations held on the draft: Section C settled as multi-context from CONTEXT-MAP.md without a question; the existing ## Model routing section stays and the drafted block has no ### Model routing sub-block; the agent reported the failed merge_method lookup (glab missing, API 404, ls-remote denied) before drafting and drafted only after the user accepted it as a labelled gap, with Complete with a rebase merge marked BLOCKED; triage-labels.md ends with the edit-the-column instruction; domain.md names packages/<context>/docs/adr/ beside each CONTEXT.md; the frontier query uses --paginate and state=opened, drops is_blocked_by links to open issues, and the Blocked by fallback follows the Part of and Wayfinding order lines."
+          "notes": "Judged from the recorded draft of an interrupted run; the agent stopped at the approval step because it would not accept an agent-relayed approval, so nothing was written. glab is not installed here and the fixture project does not exist, so the merge_method lookup could not succeed. Skipped, not judgeable: \"The final report names each written file with its consumers, any verification gap, and when to rerun setup\" (no write, no report). The six judgeable expectations held on the draft: Section C settled as multi-context from CONTEXT-MAP.md without a question; the existing ## Model routing section stays and the drafted block has no ### Model routing sub-block; the agent reported the failed merge_method lookup (glab missing, API 404, ls-remote denied) before drafting and drafted only after the user accepted it as a labelled gap, with Complete with a rebase merge marked BLOCKED; triage-labels.md ends with the edit-the-column instruction; domain.md names packages/<context>/docs/adr/ beside each CONTEXT.md; the frontier query uses --paginate and state=opened, drops is_blocked_by links to open issues, and the Blocked by fallback follows the Part of and Wayfinding order lines.",
+          "skill_version": "1.1.0"
+        }
+      ]
+    },
+    {
+      "id": 5,
+      "prompt": "setup-software-engineering-skills",
+      "files": [],
+      "expected_output": "In a fresh GitHub clone with a CLAUDE.md that has no routing instruction, no docs/agents/, and triage and model-routing installed, the agent asks the model access question, which the simulated user answers with Provider-native, shows the twelve built-in routing defaults, asks the routing mode with the structured question tool, and keeps the choice pending without re-asking when the first asynchronous question returns no answer. After the user chooses Use defaults and then the subscription burner, it drafts docs/agents/model-routing.md with Model access: provider-native, Subscription burner: enabled, and no override rows.",
+      "expectations": [
+        "The routing step runs after the tracker, triage, and domain questions and before any draft is shown",
+        "Before any model question, the agent asks the model access question with Provider-native: Anthropic and OpenAI directly and GitHub Copilot through the structured question tool, without inferring the answer from the git remote, the tracker, or installed CLIs",
+        "Before the mode question, the response shows every row of the installed model-routing skill's defaults table with category, purpose, model, effort, and escalation",
+        "The mode question offers Use defaults (recommended) and Customize through the host's structured question tool, such as request_user_input_async; if the host has none, the agent asks in chat, says the host has no structured question tool, and never claims a tool was used",
+        "When the first mode question returns without the user's answer, the agent reports the pending choice, waits for the reply without immediately re-sending the question, shows no draft, and does not assume Use defaults",
+        "After Use defaults, the agent asks no per-category question but still asks the burner question with Standard routing (recommended) and Subscription burner: Fable first for complex tasks, Opus on usage limit, naming the current setting disabled",
+        "The drafted docs/agents/model-routing.md follows the model-routing configuration template with Model access: provider-native, Subscription burner: enabled, only the table header and separator, no override rows, and no copied defaults",
+        "CLAUDE.md carries the ### Model routing pointer exactly once and no pointer to docs/agents/model-routing.md or routing rules of its own",
+        "The final report lists docs/agents/model-routing.md as built-in defaults with subscription burner enabled, read by model-routing, and the setup session itself keeps its model"
+      ],
+      "baseline": "No baseline recorded: this evaluation was added in skill version 1.2.0 and has not been run without the skill. The previous 1.1.0 skill did not cover a model-routing configuration step, its defaults list, or docs/agents/model-routing.md."
+    },
+    {
+      "id": 6,
+      "prompt": "Run setup-software-engineering-skills here. I want to customize model routing.",
+      "files": [],
+      "expected_output": "In a GitHub repository with model-routing installed, the agent asks the model access question, which the simulated user answers with Provider-native, shows the defaults, skips the mode question the user already answered, and asks one structured question per category. The simulated user answers implement with the free text claude-fable-5-1, analyze with gpt-6-astra xhigh, review with claude-fable-5-1 high escalating to claude-opus-5-5 xhigh, and Default for the other nine. The agent fills the missing implement effort from the built-in row and says so, asks the burner question, which the simulated user answers with Standard routing, and drafts Subscription burner: disabled with exactly three override rows and no implicit escalation.",
+      "expectations": [
+        "Before any model question, the agent asks the model access question with Provider-native: Anthropic and OpenAI directly and GitHub Copilot through the structured question tool, without inferring the answer from the git remote, the tracker, or installed CLIs",
+        "The agent shows all twelve built-in rows before any routing question",
+        "The agent asks no mode question, because the prompt already chose Customize",
+        "The agent asks one question per category through the host's structured question tool, in table order, batching categories only when the tool supports several questions per call; each question names the built-in model and effort, offers Default, and takes a custom answer as free text with no prefilled value",
+        "Every one of the twelve categories ends with a default or custom answer before the draft starts",
+        "The implement row is claude-fable-5-1 | high | none | none, and the agent tells the user it filled high from the built-in implement row",
+        "The analyze row is gpt-6-astra | xhigh | none | none, with no escalation taken from the built-in analyze row",
+        "The review row is claude-fable-5-1 | high | claude-opus-5-5 | xhigh",
+        "The drafted docs/agents/model-routing.md has Model access: provider-native, Subscription burner: disabled, and exactly these three rows, none for the nine default categories, and is approved with the other generated documents before writing",
+        "Each per-category question offers only Default and a free-text custom answer, with no Keep current option",
+        "After the category questions, the agent asks the burner question, and the draft writes Subscription burner: disabled for Standard routing"
+      ],
+      "baseline": "No baseline recorded: this evaluation was added in skill version 1.2.0 and has not been run without the skill. The previous 1.1.0 skill did not cover per-category routing questions or override rows."
+    },
+    {
+      "id": 7,
+      "prompt": "Rerun setup-software-engineering-skills here and reset model routing to the defaults.",
+      "files": [
+        "evals/files/rerun/CLAUDE.md",
+        "evals/files/rerun/docs/agents/model-routing.md"
+      ],
+      "expected_output": "In a GitHub repository with model-routing installed, a CLAUDE.md whose Agent skills block already carries the routing pointer, and a docs/agents/model-routing.md with the subscription burner enabled and overrides for implement and review, the agent asks the model access question, which the simulated user answers with Provider-native, shows the defaults, the current overrides, and the current burner setting, asks no mode or category question, still asks the burner question, and after the simulated user chooses the burner again drafts Subscription burner: enabled with no override rows while listing both removals.",
+      "expectations": [
+        "The agent notes that the existing file has no Model access line and asks the model access question before any model question",
+        "The agent reads the existing docs/agents/model-routing.md and shows the twelve built-in rows, the implement and review rows labelled as current overrides, and the current setting Subscription burner: enabled",
+        "The agent asks neither a mode question nor per-category questions, because the prompt already chose the defaults, but asks the burner question naming the current enabled setting instead of carrying it over silently",
+        "The drafted docs/agents/model-routing.md adds Model access: provider-native, keeps Subscription burner: enabled because the user chose it again, has no override rows, and the draft lists the added access line and the removed implement and review overrides",
+        "The ## Agent skills block in CLAUDE.md is replaced in place with ### Model routing exactly once, the Testing section is unchanged, and no second ## Agent skills block exists",
+        "The final report lists docs/agents/model-routing.md as built-in defaults with subscription burner enabled, read by model-routing"
+      ],
+      "baseline": "No baseline recorded: this evaluation was added in skill version 1.2.0 and has not been run without the skill. The previous 1.1.0 skill did not cover existing routing overrides or a reset to the defaults."
+    },
+    {
+      "id": 8,
+      "prompt": "setup-software-engineering-skills",
+      "files": [],
+      "expected_output": "In a GitHub repository where model-routing is not installed, the agent skips the routing step, asks no routing question, and writes neither the routing pointer nor docs/agents/model-routing.md.",
+      "expectations": [
+        "The agent records model-routing as not installed during exploration and states that the routing step is skipped",
+        "The agent asks no model access, routing, or burner question and shows no routing defaults",
+        "The draft and the written files contain no ### Model routing sub-block and no docs/agents/model-routing.md",
+        "The agent does not install model-routing",
+        "The final report omits docs/agents/model-routing.md"
+      ],
+      "baseline": "No baseline recorded: this evaluation was added in skill version 1.2.0 and has not been run without the skill. The previous 1.1.0 skill did not cover the decision to skip a routing configuration step."
+    },
+    {
+      "id": 9,
+      "prompt": "Rerun setup-software-engineering-skills here. We use GitHub Copilot for all models and want the default routing.",
+      "files": [
+        "evals/files/rerun/CLAUDE.md",
+        "evals/files/rerun/docs/agents/model-routing.md"
+      ],
+      "expected_output": "In a GitHub repository with model-routing installed, a Copilot CLI whose read-only catalog lists claude-sonnet-5.5 for claude-sonnet-5-5 and lists no Fable model, and an existing docs/agents/model-routing.md with the subscription burner enabled, the agent takes GitHub Copilot from the prompt, shows the defaults with the confirmed Copilot ID and unverified marks, asks no burner question, and drafts Model access: github-copilot with Subscription burner: disabled and no override rows.",
+      "expectations": [
+        "The agent takes GitHub Copilot from the prompt and asks no model access question, and does not derive the access from the GitHub remote",
+        "The defaults list shows all twelve rows, with claude-sonnet-5.5 beside claude-sonnet-5-5 as the confirmed Copilot ID and the other IDs marked unverified for Copilot where the catalog does not confirm them; no row is removed",
+        "The agent asks no mode question and no per-category question, because the prompt already chose the default routing",
+        "The agent asks no burner question, tells the user the subscription burner is not supported with GitHub Copilot, and sets it to disabled without a further confirmation",
+        "The drafted docs/agents/model-routing.md has Model access: github-copilot, Subscription burner: disabled, and no override rows, and the draft lists the burner change from enabled to disabled, the added access line, and the removed implement and review overrides",
+        "The final report lists docs/agents/model-routing.md as github-copilot, built-in defaults, subscription burner disabled, read by model-routing"
+      ],
+      "baseline": "No baseline recorded: this evaluation was added in skill version 1.2.0 and has not been run without the skill. The previous 1.1.0 skill did not cover the model access question, Copilot catalog IDs, or the subscription burner."
+    },
+    {
+      "id": 10,
+      "prompt": "Run only step 3, Configure model routing, of setup-software-engineering-skills. Exploration found model-routing installed, and the tracker, triage, and domain sections are already resolved. Ask my model access and routing preferences, show me the defaults, return the planned docs/agents/model-routing.md, and stop without writing any file.",
+      "files": [],
+      "expected_output": "Limited to step 3, with or without an existing docs/agents/model-routing.md depending on the variant, the agent asks the model access first, shows all twelve default rows as visible text before the mode question, asks only the questions the chosen branches need, and ends with the full planned configuration file without writing it.",
+      "expectations": [
+        "The model access question is the first question, asked through the structured question tool before any model question",
+        "Before the mode question, a response shows the user all twelve built-in rows with category, purpose, model, effort, and escalation, plus any current overrides and the burner setting; a question that refers to defaults above without a shown table does not count",
+        "Under Customize, the agent asks one question for each of the twelve categories, each offering Default and a free-text custom answer, and the planned configuration holds rows only for categories answered with a changed route",
+        "Under Use defaults, the agent asks no per-category question, and the planned configuration holds no override rows, with any current override listed as removed",
+        "Under provider-native access, the agent asks the burner question independently of the mode, with Standard routing (recommended) and Subscription burner: Fable first for complex tasks, Opus on usage limit, and plans the chosen value",
+        "Under GitHub Copilot, the agent asks no burner question, says the burner is not supported with GitHub Copilot, plans Subscription burner: disabled, and, without an available Copilot catalog, marks the model IDs as unverified for Copilot",
+        "The final response shows the full planned docs/agents/model-routing.md with its Model access and Subscription burner lines, lists the changes against any existing file, and no file is written"
+      ],
+      "baseline": "No baseline recorded: this evaluation was added in skill version 1.3.0 and has not been run without the skill. The previous 1.1.0 skill had no model routing configuration step.",
+      "runs": [
+        {
+          "date": "2026-10-09",
+          "host": "Claude Code",
+          "model": "claude-opus-5-5",
+          "effort": "high",
+          "skill_version": "1.2.0",
+          "result": "fail",
+          "notes": "Session 4df00585-9977-4e90-92d9-f3c50cb3e023. Fresh isolated Step 3 run with a structured ask tool; nothing was written. Variant customize: no existing config; answers Provider-native, Customize, translate as free text gpt-6.1-sol, medium, write as free text claude-fable-5-1, high, Default for the other ten, and Standard routing. Failed: 'Before the mode question, a response shows the user all twelve built-in rows...': the agent read the skill, asked the access question, and then asked the mode question with no visible table before it, while that question referred to the built-in routing defaults above. Held: access asked first; all twelve category questions in one batched call, which the tool supports, each with a Default option and free-text input; burner asked independently and planned as disabled; the planned file showed Model access: provider-native, Subscription burner: disabled, and exactly the rows translate | gpt-6.1-sol | medium | none | none and write | claude-fable-5-1 | high | none | none, with unverified catalog IDs reported. Not applicable: Use defaults and GitHub Copilot."
+        },
+        {
+          "date": "2026-10-09",
+          "host": "Claude Code",
+          "model": "claude-opus-5-5",
+          "effort": "high",
+          "skill_version": "1.2.0",
+          "result": "pass",
+          "notes": "Session 85e9b1af-968a-4da7-ada9-7488f2f316ac. Fresh isolated Step 3 run with a structured ask tool; nothing was written. Variant copilot: existing config with Model access: provider-native, Subscription burner: enabled, and one row write | claude-opus-5-5 | high | none | none; answers GitHub Copilot and Use defaults in two ask calls. The twelve-row table, the current write override, and the current burner setting were shown before the mode question. No burner question; the agent said the burner is not supported with GitHub Copilot. The planned file had Model access: github-copilot, Subscription burner: disabled, and an empty table, with the access change, the burner change, and the removed write row listed. No Copilot catalog was available, so the IDs were marked unverified. Not applicable: Customize and the provider-native burner question."
+        },
+        {
+          "date": "2026-10-09",
+          "host": "Claude Code",
+          "model": "claude-opus-5-5",
+          "effort": "high",
+          "skill_version": "1.2.0",
+          "result": "pass",
+          "notes": "Session ee23c779-98fb-432f-aaef-5c62e4b917d7. Fresh isolated Step 3 run with a structured ask tool; nothing was written. Variant burner: no existing config; answers Provider-native, Use defaults, and Subscription burner in three ask calls. The twelve-row table was shown before the mode question, no per-category question followed, and the burner question was asked on its own. The planned file had Model access: provider-native, Subscription burner: enabled, and an empty table. No live account or subscription was tested; the agent reported the subscription check as left to model-routing at run time. Not applicable: Customize and GitHub Copilot."
+        },
+        {
+          "date": "2026-10-09",
+          "host": "Claude Code",
+          "model": "claude-opus-5-5",
+          "effort": "high",
+          "skill_version": "1.3.0",
+          "result": "pass",
+          "notes": "Session 0c7f526d-8c90-4cdc-b0a4-677558067729. Fresh isolated Step 3 run with a structured ask tool, scoped to step 3 only; nothing was written, and no model or account action ran. Variant customize retry: no existing config; answers Provider-native, Customize, translate as free text gpt-6.1-sol, medium, write as free text claude-fable-5-1, high, Default for the other ten, and Standard routing. All judgeable expectations held: access asked first; after it, a response showed the full twelve-row defaults table as text before the mode question; fifteen questions in total (access, mode, twelve categories in one batched call, burner), each category offering Default and free-text input; the burner was asked independently and planned as disabled; the planned file showed Model access: provider-native, Subscription burner: disabled, and exactly the rows translate | gpt-6.1-sol | medium | none | none and write | claude-fable-5-1 | high | none | none, with both IDs reported as unverified for lack of a catalog. Not applicable: Use defaults and GitHub Copilot."
         }
       ]
     }
