@@ -18,7 +18,7 @@ Reusable [Agent Skills](https://agentskills.io/) for software engineering and pr
 ### Install the skills
 
 ```bash
-npx skills@latest add grauzone-dev/agent-skills
+npx skills@latest add grauzone-labs/agent-skills
 ```
 
 The CLI lists the skills in this repository; select the ones you want. Without further parameters it detects the coding agents installed on your machine and asks where to install.
@@ -41,7 +41,7 @@ Add `--agent <identifier>` to target one agent explicitly. This skips installati
 For example, this installs the skills for Claude Code at user level:
 
 ```bash
-npx skills@latest add grauzone-dev/agent-skills --global --agent claude-code
+npx skills@latest add grauzone-labs/agent-skills --global --agent claude-code
 ```
 
 See the [supported agents](https://github.com/vercel-labs/skills#supported-agents) for further identifiers.
@@ -51,7 +51,7 @@ See the [supported agents](https://github.com/vercel-labs/skills#supported-agent
 Add `--skill <name>` to select a skill directly. Add `--yes` to skip prompts. For example, this installs `research` for OpenCode in the current project:
 
 ```bash
-npx skills@latest add grauzone-dev/agent-skills --skill research --agent opencode --yes
+npx skills@latest add grauzone-labs/agent-skills --skill research --agent opencode --yes
 ```
 
 Replace `research` with a skill name from the [catalog](SKILLS.md) and `opencode` with your agent's identifier. Add `--global` for a user-level installation.
