@@ -1,0 +1,6 @@
+interface:
+  display_name: "T3 integration"
+  short_description: "Use T3 MCP capabilities with existing workflow fallbacks"
+
+policy:
+  allow_implicit_invocation: true

@@ -7,6 +7,7 @@ Browse by the work you want to do. Each link opens the skill's `SKILL.md`, which
 | Skill | Use when |
 |---|---|
 | [`model-routing`](skills/productivity/model-routing/SKILL.md) | Choosing a model for a task, splitting work by deliverable, or applying escalation rules. |
+| [`t3-integration`](skills/productivity/t3-integration/SKILL.md) | Running these workflows through T3 Code's internal MCP server, with existing host workflows as fallbacks. |
 
 ## Planning and issue management
 
