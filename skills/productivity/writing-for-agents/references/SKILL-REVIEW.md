@@ -13,41 +13,11 @@ The procedures of [`writing-for-agents`](../SKILL.md) for the two moments a skil
 Evaluations first, instructions second: a skill written before its evaluations documents imagined problems.
 
 1. **Find the gap.** Run the task without a skill on one representative case. Record where the agent fails and which context you keep re-supplying. Iterate on that one hard case until it succeeds; the context that made it succeed is the skill's raw material.
-2. **Write three evaluations** to `evals/evals.json` in the skill directory, one per gap found, each with a recorded baseline:
-
-   ```json
-   {
-     "skill_name": "<name>",
-     "evals": [
-       {
-         "id": 1,
-         "prompt": "The task as the user would type it",
-         "files": ["evals/files/input.md"],
-         "expected_output": "One sentence on what success looks like",
-         "expectations": [
-           "Checkable statement about the output or the agent's actions",
-           "Another checkable statement"
-         ],
-         "baseline": "What the agent did without the skill",
-         "runs": [
-           {
-             "date": "2026-01-31",
-             "host": "Claude Code",
-             "model": "claude-fable-5-1",
-             "result": "pass",
-             "notes": "Which expectations failed and how, or empty"
-           }
-         ]
-       }
-     ]
-   }
-   ```
-
-   `runs` is optional and holds one entry per fresh-session test from step 5; `result` is `pass` only when every expectation held.
+2. **Choose representative checks.** Define prompts, inputs, expected behavior, and the observed baseline for the gaps from step 1. Keep these in the current task notes or a temporary directory outside the skill; retain test artifacts only when the user requests them. Include the failure paths the instructions must handle.
 
 3. **Write the minimum that passes them.** Frontmatter per `SKILL-MECHANICS.md`, body per the levers in `SKILL.md`.
 4. **Measure and check.** Run `scripts/measure.sh <skill-dir>` from this skill's directory, then the checklist below; fix every FAIL and every failed item, and re-run both until measure.sh prints no FAIL and every item passes.
-5. **Test in a fresh session** on the evaluations, with every model and host the skill will run on, and append each run to the evaluation's `runs`. Done when every expectation holds on each. The smallest model exposes missing guidance; the largest exposes over-explaining. Watch how the agent navigates: a reference it never opens is unsignalled or unnecessary, one it opens every run belongs in `SKILL.md`, one it previews with `head` is nested too deep.
+5. **Test in a fresh session** on the evaluations, with every model and host the skill will run on, and report the tested models, hosts, results, and any gaps in the task response. Done when every expectation holds on each. The smallest model exposes missing guidance; the largest exposes over-explaining. Watch how the agent navigates: a reference it never opens is unsignalled or unnecessary, one it opens every run belongs in `SKILL.md`, one it previews with `head` is nested too deep.
 6. **Iterate from what step 5 showed,** and bump `metadata.version` with each behaviour change.
 
 ## Reviewing a skill
@@ -122,6 +92,6 @@ Pass or fail per item. The frontmatter rules and their limits are stated in `SKI
 
 ### Evaluation
 
-- [ ] `evals/evals.json` holds at least three evaluations: prompt, inputs, expectations, baseline.
+- [ ] Representative checks define prompts, inputs, expected behavior, and observed baselines; persistent test files are optional.
 - [ ] Tested in a fresh session on every target model and host.
 - [ ] Navigation observed and the findings fed back into the skill.

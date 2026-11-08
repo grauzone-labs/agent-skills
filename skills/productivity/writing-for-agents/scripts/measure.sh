@@ -2,7 +2,7 @@
 # Measure a skill against the checkable items of SKILL-REVIEW.md.
 # Usage: scripts/measure.sh <skill-dir>
 # Prints one "ok" or "FAIL" line per measurement; exits 1 when any FAIL.
-# Limits (64, 1024, 500, 100, 3) are the constraints stated in SKILL-MECHANICS.md
+# Limits (64, 1024, 500, 100) are the constraints stated in SKILL-MECHANICS.md
 # and the checklist of SKILL-REVIEW.md.
 set -u
 
@@ -54,7 +54,7 @@ version=$(printf '%s\n' "$frontmatter" | awk '/^[ ]+version:/{sub(/^[ ]+version:
 [ "$body_lines" -lt 500 ] && ok "SKILL.md body $body_lines lines < 500" || fail "SKILL.md body $body_lines lines >= 500"
 [ -f "$dir/README.md" ] && fail "README.md inside the skill directory" || ok "no README.md in skill directory"
 
-mapfile -t refs < <(find "$dir" -mindepth 2 -name '*.md' -not -path '*/evals/*' -not -path '*/agents/*' 2>/dev/null | sort)
+mapfile -t refs < <(find "$dir" -mindepth 2 -name '*.md' -not -path '*/agents/*' 2>/dev/null | sort)
 for ref in "${refs[@]}"; do
   rel="${ref#"$dir"/}"
   base=$(basename "$ref")
@@ -77,46 +77,6 @@ while IFS= read -r script; do
   rel="${script#"$dir"/}"
   if grep -Frq "$(basename "$script")" "$skill" "${refs[@]}" 2>/dev/null; then ok "$rel referenced"; else fail "$rel never referenced from SKILL.md or references"; fi
 done < <(find "$dir/scripts" -type f 2>/dev/null | sort)
-
-# --- Evaluation
-if [ ! -f "$dir/evals/evals.json" ]; then
-  fail "no evals/evals.json"
-elif command -v node >/dev/null 2>&1; then
-  # skill_name matches the directory; at least three evaluations; prompt, expected_output,
-  # baseline, and every expectation nonempty; every listed file exists relative to the skill.
-  if out=$(node --input-type=module - "$dir" <<'JS'
-import fs from 'node:fs';
-import path from 'node:path';
-try {
-  const dir = process.argv[2];
-  const data = JSON.parse(fs.readFileSync(path.join(dir, 'evals/evals.json'), 'utf8'));
-  const nonempty = value => typeof value === 'string' && value.trim().length > 0;
-  if (data.skill_name !== path.basename(dir)) throw Error('skill_name differs from directory');
-  if (!Array.isArray(data.evals) || data.evals.length < 3) throw Error('at least three evaluations required');
-  for (const e of data.evals) {
-    for (const key of ['prompt', 'expected_output', 'baseline']) {
-      if (!nonempty(e[key])) throw Error(`evaluation ${e.id}: missing ${key}`);
-    }
-    if (!Array.isArray(e.expectations) || !e.expectations.length || !e.expectations.every(nonempty)) {
-      throw Error(`evaluation ${e.id}: expectations must be nonempty statements`);
-    }
-    if (!Array.isArray(e.files)) throw Error(`evaluation ${e.id}: files must be an array`);
-    for (const file of e.files) {
-      if (!nonempty(file) || !fs.existsSync(path.resolve(dir, file))) throw Error(`evaluation ${e.id}: missing input ${file}`);
-    }
-  }
-  console.log(`evals/evals.json has ${data.evals.length} evaluations with required fields and existing inputs`);
-} catch (error) {
-  console.log(error.message);
-  process.exit(1);
-}
-JS
-  ); then ok "$out"; else fail "evals/evals.json: $(printf '%s' "$out" | tr '\n' ' ')"; fi
-else
-  # Without node, count one "prompt" key per evaluation.
-  n=$(grep -c '"prompt"' "$dir/evals/evals.json")
-  [ "$n" -ge 3 ] && ok "evals/evals.json has $n evaluations (node not found: fields unchecked)" || fail "evals/evals.json has $n evaluations (< 3)"
-fi
 
 # --- Validator (skills-ref). disable-model-invocation is the one rejection this collection accepts.
 validator=()

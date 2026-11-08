@@ -2,10 +2,10 @@
 name: writing-for-agents
 description: Explains the levers that make an agent follow a document the same way every run, and provides the procedure, script, and checklist for creating and reviewing skills. Use when creating, reviewing, or editing a skill, AGENTS.md, CLAUDE.md, a system prompt, or a subagent prompt.
 license: MIT
-compatibility: Requires bash 4+ for scripts/measure.sh, Node.js for its evals.json check, and skills-ref on PATH or npx with network access for the validator it runs.
+compatibility: Requires bash 4+ for scripts/measure.sh and skills-ref on PATH, or npx with network access for the validator it runs.
 metadata:
   author: "Sascha Grau"
-  version: "1.2.0"
+  version: "1.3.0"
   category: "productivity"
 ---
 
