@@ -1,16 +1,18 @@
 ---
 name: triage
 description: Moves issues and external PRs through a state machine of triage roles - categorising, verifying, grilling if needed, and writing agent-ready briefs. Use when working the issue queue, assessing a reported bug or request, or changing an issue's triage state. Implementing an issue is the implement-work-item skill.
-compatibility: Requires git and the project's test tools; a remote tracker also needs network access and the tracker CLI named in docs/agents/issue-tracker.md (gh, glab, or az); reads docs/agents/issue-tracker.md and docs/agents/triage-labels.md written by the setup-software-engineering-skills skill; uses the grilling and domain-modeling skills of this collection, and on GitHub the leaving-pr-comments skill.
+compatibility: Requires git and the project's test tools; a remote tracker also needs network access and the tracker CLI named in docs/agents/issue-tracker.md (gh, glab, or az); reads docs/agents/issue-tracker.md and docs/agents/triage-labels.md written by the setup-software-engineering-skills skill; uses the grilling and domain-modeling skills of this collection, and on GitHub the leaving-pr-comments skill. Optional T3 paths use t3-integration and the t3-code MCP server.
 license: MIT
 disable-model-invocation: true
 metadata:
   author: "Sascha Grau"
-  version: "1.2.0"
+  version: "1.3.0"
   category: "engineering"
 ---
 
 # Triage
+
+In T3 Code without `t3-integration`, say so and resume the unfinished step below; keep completed work.
 
 ## Table of contents
 
@@ -89,6 +91,8 @@ Discovery is read-only. One line per item (age since creation; the tracker's ide
 **Complete when:** all three buckets are shown with counts, and the maintainer has been asked which item to take.
 
 ## Triage a specific issue or PR
+
+In T3 Code, load `t3-integration` when working on a PR or selecting its review checkout, for PR registration and workspace binding; retain the existing tracker and git workflow when those capabilities are unavailable.
 
 Record the five steps below in the host's task list tool, one task per step, before step 1, and mark each task done as its completion criterion holds. Where the host offers no task list tool, copy this checklist into your first response and tick it there instead.
 

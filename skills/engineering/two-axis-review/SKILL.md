@@ -1,11 +1,11 @@
 ---
 name: two-axis-review
 description: Two-axis review of a change set against repository standards and its originating spec, each axis in its own sub-agent, reported separately. Use when reviewing a diff, branch, or pull request before merge; takes the fixed point and an optional spec path as arguments.
-compatibility: Requires git and a host that can run parallel sub-agents; fetching issues needs network access and the tracker tool named in docs/agents/issue-tracker.md.
+compatibility: Requires git and a host that can run parallel sub-agents; fetching issues needs network access and the tracker tool named in docs/agents/issue-tracker.md. Optional T3 paths use t3-integration and the t3-code MCP server.
 license: MIT
 metadata:
   author: "Sascha Grau"
-  version: "1.1.0"
+  version: "1.2.0"
   category: "engineering"
 ---
 
@@ -15,6 +15,8 @@ Two-axis review of the change set since a fixed point through the current workin
 
 - **Standards** — does the code conform to the repository's standards sources?
 - **Spec** — does the code faithfully implement the originating spec?
+
+In T3 Code without `t3-integration`, say so and resume the unfinished step below; keep completed work.
 
 ## Process
 
@@ -48,7 +50,7 @@ Find every standards source: each repository file that governs how code is writt
 
 ### 4. Spawn the sub-agents and wait
 
-Start this step once step 2 is complete. Spawn both sub-agents in parallel (on Claude Code, issue both Agent calls in the same message), then wait for every spawned sub-agent to return its report, keeping the turn open while one runs. Both prompts include the change-set commands and the recorded commit messages from step 1.
+Start this step once step 2 is complete. In T3 Code, load `t3-integration` when installed for model-selected delegation and async collection; yield while children work when no independent work remains, and resume to collect every report. Otherwise spawn both sub-agents in parallel (on Claude Code, issue both Agent calls in the same message), then wait for every spawned sub-agent to return its report, keeping the turn open while one runs. Both prompts include the change-set commands and the recorded commit messages from step 1.
 
 **Standards sub-agent prompt** — include:
 

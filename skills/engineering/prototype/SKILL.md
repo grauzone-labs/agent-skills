@@ -2,16 +2,18 @@
 name: prototype
 description: Builds a throwaway prototype to answer a design question. Use when the user wants to sanity-check whether a state model or logic feels right, or explore what a UI should look like.
 license: MIT
-compatibility: Requires git for the throwaway branch. Verification drives the prototype in a browser or preview tool the agent can operate; without one, the checks pass to the reviewer.
+compatibility: Requires git for the throwaway branch. Verification drives the prototype in a browser or preview tool the agent can operate; without one, the checks pass to the reviewer. Optional T3 paths use t3-integration and the t3-code MCP server.
 metadata:
   author: "Sascha Grau"
-  version: "1.1.0"
+  version: "1.2.0"
   category: "engineering"
 ---
 
 # Prototype
 
 A prototype is **throwaway code that answers a question**. The question decides the shape.
+
+In T3 Code without `t3-integration`, say so and resume the unfinished step below; keep completed work.
 
 ## Pick a branch
 
@@ -21,6 +23,8 @@ Identify which question is being answered — from the user's prompt, the surrou
 - **"What should this look like?"** → [UI.md](references/UI.md): several radically different variants of one route, switchable through a URL search param and a floating bottom bar.
 
 If the question is genuinely ambiguous and the user is not reachable, take the branch that matches the surrounding code (a backend module → logic; a page or component → UI) and open the prototype's visible top paragraph with the branch taken and why, for example "Logic branch: `billing/invoice.ts` is a backend module with no page or component."
+
+In T3 Code, load `t3-integration` when installed for browser verification, HTML delivery, and workspace binding when preserving a throwaway branch; use its collaborative preview and checked inline rendering when available. Preserve the artifacts, hand-off fields, and existing browser/path workflow as the fallback.
 
 ## Rules that apply to both
 

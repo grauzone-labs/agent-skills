@@ -2,16 +2,18 @@
 name: model-routing
 description: Routes each requested deliverable to a model and reasoning effort by its task category before any work starts or is delegated, applying repository and user overrides. Use when any task starts in any session.
 license: MIT
-compatibility: Requires a harness with a model-switch or session control. External fallback uses an installed and authenticated claude, codex, or GitHub Copilot CLI.
+compatibility: Requires a harness with a model-switch or session control. External fallback uses an installed and authenticated claude, codex, or GitHub Copilot CLI. Optional T3 paths use t3-integration and the t3-code MCP server.
 metadata:
   author: "Sascha Grau"
-  version: "1.3.0"
+  version: "1.4.0"
   category: "productivity"
 ---
 
 # Model routing
 
 At the start of every task, classify each requested deliverable into one category by its purpose. Then resolve its route, the model and reasoning effort that perform it, and assign that route before doing the work or delegating it. Classification is complete when every deliverable has exactly one category and one route.
+
+In T3 Code without `t3-integration`, say so and resume the unfinished step below; keep completed work.
 
 ## Categories and built-in defaults
 
@@ -120,7 +122,7 @@ The burner never runs over GitHub Copilot, a Copilot subscription included. When
 
 ### 1. Identify the current harness and resolve the model
 
-Use explicit session instructions or runtime information to identify the harness executing the current session. A wrapper such as T3 Code can use OpenCode underneath; use the underlying harness for session and model operations. Installed CLIs and configuration directories are evidence of available fallback tools, not proof of the active harness. If the active harness remains unknown, ask the user to identify it.
+Use explicit session instructions or runtime information to identify the harness executing the current session. In T3 Code, load `t3-integration` when installed for discovery, model selection, delegation, and workspace binding; use its T3 path before the session/CLI fallbacks below. Outside T3 or when that capability is unavailable, use the underlying harness for session and model operations. Installed CLIs and configuration directories are evidence of available fallback tools, not proof of the active harness. If the active harness remains unknown, ask the user to identify it.
 
 Inspect the harness's available tools, model catalog, session controls, and effort settings, and settle the model access:
 
@@ -138,7 +140,9 @@ Treat `model not found` as a failed lookup in that interface, not proof that the
 
 ### 2. Try execution paths in order
 
-Use the first successful path:
+In T3, apply the `t3-integration` orchestration branch first: keep a matching current execution session, otherwise prefer a supported native same-provider delegation or T3-owned delegation as that branch specifies. If a required T3 capability is unavailable, use the paths below. Preserve task IDs after accepted or uncertain dispatch; a timeout is no reason to launch a duplicate CLI worker.
+
+Use the first successful fallback path:
 
 1. **Current session.** If the session already uses the assigned model and effort, continue. Otherwise use exposed model-switch and effort controls to select them in the current session. A model switch is a harness control that changes the session's model; a slash command typed into a shell or a model named in a prompt is not one. A current session on any other model, a higher tier included, does not satisfy the route; without a switch control, go to path 2 or 3.
 2. **Same-harness session.** If the current session cannot switch, search the harness for a suitable existing session and resume it. Start a sub-session only when no suitable session can be continued, through a delegation tool that accepts the assigned model explicitly.
@@ -146,7 +150,7 @@ Use the first successful path:
    - **GitHub Copilot,** when the access is `github-copilot`, or `auto` from a Copilot harness: use the GitHub Copilot CLI directly as the final fallback. Copilot provides access to both Anthropic and OpenAI models through its own model catalog. Resolve the assigned model there and discover the installed invocation through CLI help. Skip provider-native CLIs in this branch; Copilot model access does not establish separate Claude or Codex authentication.
    - **Provider-native,** when the access is `provider-native`, or `auto` from any other harness: discover an installed provider-native CLI: `claude` for Anthropic models or `codex` for OpenAI models. Check its help, model availability, effort settings, authentication, and session-resume support. Resolve the model identifier in that harness, then search for a suitable session to resume before starting a new one.
 
-A session is suitable when its context is accessible through supported resume or continuation controls, it covers the same repository and relevant topic, it can use the assigned model and effort, and it is idle or its previous work has finished. A focused follow-up review of the same topic resumes its earlier review session when it meets these criteria. Give unrelated work, or work whose prior context cannot be accessed, a new session.
+A session is suitable when its context is accessible through supported resume or continuation controls, it covers the same repository and relevant topic, it can use the assigned model and effort, and it is idle or its previous work has finished. Outside T3, a focused follow-up review of the same topic resumes its earlier review session when it meets these criteria. T3 delegated review rounds follow the fresh-launch rule in `t3-integration`. Give unrelated work, or work whose prior context cannot be accessed, a new session.
 
 If a previous attempt already used the same CLI and execution path, retry only when a newly verified identifier or setting addresses the failure.
 

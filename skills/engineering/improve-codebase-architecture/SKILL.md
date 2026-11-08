@@ -2,11 +2,11 @@
 name: improve-codebase-architecture
 description: Scans a codebase for deepening opportunities, compares them in a visual HTML report, then explores a chosen candidate with the user. Use when asked to review or improve architecture, module boundaries, or codebase navigability.
 license: MIT
-compatibility: Uses git history, a sub-agent tool, and a desktop opener (xdg-open, open, or start) when present, falling back to in-session inspection and path-only delivery; viewing the report needs network access to the Tailwind and Mermaid CDNs.
+compatibility: Uses git history, a sub-agent tool, and a desktop opener (xdg-open, open, or start) when present, falling back to in-session inspection and path-only delivery; viewing the report needs network access to the Tailwind and Mermaid CDNs. Optional T3 paths use t3-integration and the t3-code MCP server.
 disable-model-invocation: true
 metadata:
   author: "Sascha Grau"
-  version: "1.1.0"
+  version: "1.2.0"
   category: "engineering"
 ---
 
@@ -15,6 +15,8 @@ metadata:
 Surface architectural friction and propose **deepening opportunities**: refactors that turn shallow modules into deep ones. The aim is testability and AI-navigability.
 
 Before the review, load the `codebase-design` skill. It is the single source of truth for **module**, **interface**, **depth**, **seam**, **adapter**, **leverage**, **locality**, the deletion test, and dependency categories.
+
+In T3 Code without `t3-integration`, say so and resume the unfinished step below; keep completed work.
 
 ## Process
 
@@ -26,7 +28,7 @@ Before the review, load the `codebase-design` skill. It is the single source of 
    - When the user names a module, subsystem, or pain point, use that direction.
    - Otherwise, inspect the most recent 200 commits (the whole history when shorter) for paths that recur. Let a concentrated hot spot set the initial scope; when the changes are dispersed, compare the three most recurrent areas.
    - When the user gave no scope and history is absent or holds no source changes, report that gap and ask for a module, subsystem, or pain point; resume once the scope is named.
-4. Read each selected `CONTEXT.md` and the ADRs affecting the scope before interpreting its seams. Spawn a sub-agent with the selected scope and evidence requirements. Have it inspect the involved modules, their callers, tests, and dependencies, then return observed friction with file-level evidence. Where the host has no sub-agent tool, does not let you spawn one, or the dispatch fails, say which in your response, then run that inspection yourself.
+4. In T3 Code, load `t3-integration` when installed for routed delegation and async collection; the existing sub-agent/in-session paths remain the fallback. Read each selected `CONTEXT.md` and the ADRs affecting the scope before interpreting its seams. Spawn a sub-agent with the selected scope and evidence requirements. Have it inspect the involved modules, their callers, tests, and dependencies, then return observed friction with file-level evidence. Where the host has no sub-agent tool, does not let you spawn one, or the dispatch fails, say which in your response, then run that inspection yourself. In T3, take over only after confirmed unavailability or non-acceptance; reconcile an uncertain dispatch using its retained task/request ID first.
 5. Assess observed friction through these lenses:
    - Understanding one concept requires moving across several modules.
    - A module is **shallow**.
@@ -45,7 +47,7 @@ Before the review, load the `codebase-design` skill. It is the single source of 
 
 Load [HTML-REPORT.md](references/HTML-REPORT.md) before composing the report. It is the single source of truth for the report scaffold, card structure, diagrams, and visual style.
 
-Write one HTML file to the OS temp directory, keeping the repository unchanged. Resolve the temp directory from `$TMPDIR`, falling back to `/tmp` on Linux/macOS or `%TEMP%` on Windows. Write to `<tmpdir>/architecture-review-<timestamp>.html` so each run gets a fresh file. Re-read the written file against the candidate card fields and the top-recommendation anchor; fix omissions and broken anchors, then repeat until it passes. Open it with `xdg-open` on Linux, `open` on macOS, or `start` on Windows, and return its absolute path. When the open command fails or no opener exists, report that the file was not opened and return the path anyway. When the write is denied, state in your response that the report could not be written and why, then give every candidate with its strength and file-level evidence, and the top recommendation, in the reply itself.
+Write one HTML file to the OS temp directory, keeping the repository unchanged. Resolve the temp directory from `$TMPDIR`, falling back to `/tmp` on Linux/macOS or `%TEMP%` on Windows. Write to `<tmpdir>/architecture-review-<timestamp>.html` so each run gets a fresh file. Re-read the written file against the candidate card fields and the top-recommendation anchor; fix omissions and broken anchors, then repeat until it passes. In T3 Code, use the HTML branch of `t3-integration` when installed to preview and render the checked artifact inline, adapting the scaffold to the tool's theme/layout contract. When unavailable, keep the following existing delivery path. Open it with `xdg-open` on Linux, `open` on macOS, or `start` on Windows, and return its absolute path. When the open command fails or no opener exists, report that the file was not opened and return the path anyway. When the write is denied, state in your response that the report could not be written and why, then give every candidate with its strength and file-level evidence, and the top recommendation, in the reply itself.
 
 Keep each candidate at decision level; reserve alternative interface design for step 3.
 
@@ -53,7 +55,7 @@ Surface an ADR conflict on a candidate's card only when observed friction warran
 
 When one or more candidates are evidence-backed, end the reply, with or without a written report, by asking: **“Which of these would you like to explore?”** When none are evidence-backed, state that outcome, list the examined scope and unavailable evidence, and ask whether the user wants a broader or differently focused scan.
 
-**Complete when:** the HTML file exists at a unique temporary path, contains every evidence-backed candidate and, when any exist, one evidence-backed top recommendation, and its absolute path has been returned together with the outcome of opening it; or, when the write was denied, the reply states that and carries the candidates and top recommendation.
+**Complete when:** the HTML file exists at a unique temporary path, contains every evidence-backed candidate and, when any exist, one evidence-backed top recommendation, and its absolute path has been returned, together with either successful inline rendering or the outcome of opening it; or, when the write was denied, the reply states that and carries the candidates and top recommendation.
 
 ### 3. Explore the selected candidate
 

@@ -1,18 +1,20 @@
 ---
 name: implement-work-item
 description: Implements one tracker work item end to end, from its dependency gate through its merged pull request, on GitHub, Azure DevOps, or another tracker and pull request system. Use when the user names a work item ID to implement; `implement` owns a spec or ticket built on the current branch.
-compatibility: Requires git, a project test runner for testable work, a host that can run sub-agents, network access to the tracker and pull request system, and the tdd, two-axis-review, pr, and model-routing skills of this collection, plus the leaving-pr-comments skill on GitHub. Uses gh on GitHub and az with the azure-devops extension on Azure DevOps.
+compatibility: Requires git, a project test runner for testable work, a host that can run sub-agents, network access to the tracker and pull request system, and the tdd, two-axis-review, pr, and model-routing skills of this collection, plus the leaving-pr-comments skill on GitHub. Uses gh on GitHub and az with the azure-devops extension on Azure DevOps. Optional T3 paths use t3-integration and the t3-code MCP server.
 license: MIT
 disable-model-invocation: true
 metadata:
   author: "Sascha Grau"
-  version: "1.2.0"
+  version: "1.3.0"
   category: "engineering"
 ---
 
 # Implement a work item
 
 Take one work item from the tracker to a merged pull request against the target branch. The user supplies the work item ID and two gos: one that opens the pull request and one that merges it. Derive scope and context from the tracker.
+
+In T3 Code without `t3-integration`, say so and resume the unfinished step below; keep completed work.
 
 ## Progress
 
@@ -82,9 +84,11 @@ After the step 1 summary, report `Dependencies: <one line per blocker ID with it
 
 ## 3. Branch
 
+In T3 Code, load `t3-integration` when installed for workspace binding before changing branches or delegating isolated work. Reuse an appropriate existing bound checkout; a conflicting branch/base must be resolved without silently moving the thread. Outside T3, or when the capability is unavailable, keep the branch procedure below.
+
 Fetch the remote and name the work branch by the repository's convention; without one, use `feature/<work-item-id>-<short-english-slug>`.
 
-- On a fresh start, create the branch from the up-to-date target branch only.
+- On a fresh start outside an existing T3 binding, create the branch from the up-to-date target branch only. In a T3 binding, reuse a suitable bound work branch; if its branch/base is unsuitable, follow the integration's binding rules before proceeding.
 - On resume, reuse the existing work branch.
 - Parent membership lives in the tracker; the work branch is the only branch this work item creates.
 
@@ -154,6 +158,8 @@ On the go, fetch the target branch. If it moved, resync. This gate is passed whe
 ## 10. Pull request and required reviews
 
 Use the `pr` skill to open one pull request to the target branch, carrying the closing link for the work item. Follow the status rules in the tracker contract.
+
+In T3 Code, load `t3-integration` when installed for PR registration, parent-owned watching, and unwatching at handoff. Await app notifications between passes through this step; the existing monitoring procedure remains the fallback when watching is unavailable.
 
 Stay on the pull request until every required check is green and every reviewer that repository rules require, automated or human, has reviewed the head commit without open findings. Fix every valid finding or reply with the reason for leaving it, push the update, and wait for the review of the new head. On GitHub, post each reply with the `leaving-pr-comments` skill. If resolving a review thread, do so only after the skill verified the reply.
 

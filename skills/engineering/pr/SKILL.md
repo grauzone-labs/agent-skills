@@ -1,15 +1,17 @@
 ---
 name: pr
 description: "Writes a pull request body that is fast to review: a summary visual, before-and-after evidence, and the merge danger. Use when writing or revising a PR or merge request description, or opening the pull request."
-compatibility: Requires git. Publishing the pull request needs network access and gh on GitHub or the CLI named in docs/agents/issue-tracker.md.
+compatibility: Requires git. Publishing the pull request needs network access and gh on GitHub or the CLI named in docs/agents/issue-tracker.md. Optional T3 paths use t3-integration and the t3-code MCP server.
 license: MIT
 metadata:
   author: "Sascha Grau"
-  version: "1.1.0"
+  version: "1.2.0"
   category: "engineering"
 ---
 
 # PR
+
+In T3 Code without `t3-integration`, say so and resume the unfinished step below; keep completed work.
 
 ## Table of contents
 
@@ -21,6 +23,8 @@ metadata:
 The target branch is the one the user names, otherwise the repository's default branch. Read the whole change set against the target branch and its commit messages before writing. When the repository cannot be read, write from the supplied change material, which is every file attached to the request or present in the working directory: list the working directory and read those files before asking the user for anything, and name the unreadable repository in Evidence.
 
 Use the project's domain vocabulary: follow `docs/agents/domain.md` when it exists; otherwise use the root `CONTEXT-MAP.md` to locate the affected contexts' `CONTEXT.md`, or the root `CONTEXT.md` for a single context. When domain documents are absent, use the existing code's terms.
+
+In T3 Code, load `t3-integration` when installed and creating or working on an existing PR for registration and handoff tracking. Keep body-only drafts and hosted PR descriptions as Markdown; the existing publication operation remains the fallback when T3 capabilities are unavailable.
 
 Use this template:
 
@@ -49,7 +53,7 @@ Use this template:
 <optional: potential ramifications of merge>
 ```
 
-Unless the user asks to open the PR, your response to the user is the body itself, as Markdown with brief prose, from `## Summary` to the end of Merge Danger with nothing before or after it, also when the input was a file. When the user asks to open the PR, publish it through the PR-opening operation in `docs/agents/issue-tracker.md` when the contract names one, otherwise with the pull request system's CLI (`gh pr create --base <target-branch> --title "..." --body-file <file>` on GitHub), and return `PR: <url>`. When publishing fails, keep the body and report `PR publication failed: <operation>; <error>; body: <path>`.
+Unless the user asks to open the PR, your response to the user is the body itself, as Markdown with brief prose, from `## Summary` to the end of Merge Danger with nothing before or after it, also when the input was a file. When the user asks to open the PR, publish it through the PR-opening operation in `docs/agents/issue-tracker.md` when the contract names one, otherwise with the pull request system's CLI (`gh pr create --base <target-branch> --title "..." --body-file <file>` on GitHub), register the created URL through the T3 branch when applicable, and return `PR: <url>`. When publishing fails, keep the body and report `PR publication failed: <operation>; <error>; body: <path>`.
 
 **Complete when:** the body has all three sections, each visual sits next to the text it supports, the evidence shows before and after or states what was not captured, and the merge danger names the door and the blast radius.
 

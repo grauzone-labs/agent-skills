@@ -60,6 +60,14 @@ Replace `research` with a skill name from the [catalog](SKILLS.md) and `opencode
 
 Some skills call other skills of this collection, so a selective install should include them:
 
+When using T3 Code, also install `t3-integration` for `model-routing`, `council`, `two-axis-review`, `implement`, `implement-work-item`, `pr`, `triage`, `research`, `prototype`, `diagnosing-bugs`, and `improve-codebase-architecture`. It maps those workflows to T3's internal MCP server. Each capability keeps the existing host/CLI/browser path as its fallback; a permission failure or pending task is not an unavailable capability. Install it for the underlying agent you use in T3 (`codex` or `claude-code`, for example), using the same installation scope as the calling skills:
+
+```bash
+npx skills@latest add grauzone-labs/agent-skills --skill t3-integration --agent codex --global
+```
+
+The integration reads T3's live tool contracts rather than requiring a separate MCP server configuration. If a selective installation omits it, the skills keep their existing paths and report the missing T3 integration where relevant.
+
 | Skill | Also install | Why |
 |---|---|---|
 | [`council`](skills/productivity/council/SKILL.md) | [`model-routing`](skills/productivity/model-routing/SKILL.md), [`leaving-pr-comments`](skills/productivity/leaving-pr-comments/SKILL.md) | `model-routing` chooses the models for the work around the council reviews; `leaving-pr-comments` writes the replies to GitHub pull request comments. |

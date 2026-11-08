@@ -1,11 +1,11 @@
 ---
 name: research
 description: Researches a bounded question and writes a cited finding from authoritative sources. Use when the user asks to research, look up, or verify a decision, documentation, API, or source-code fact of an examined system.
-compatibility: Requires network access for online sources and a host with a subagent dispatch tool for the lead-and-worker split.
+compatibility: Requires network access for online sources and a host with a subagent dispatch tool for the lead-and-worker split. Optional T3 paths use t3-integration and the t3-code MCP server.
 license: MIT
 metadata:
   author: "Sascha Grau"
-  version: "1.1.0"
+  version: "1.2.0"
   category: "engineering"
 ---
 
@@ -13,9 +13,11 @@ metadata:
 
 A **finding** is one Markdown file that answers a bounded question with claim-level evidence. The source that owns a claim is **authoritative**: official vendor documentation, specifications, source code, and the API or reference material of the system being examined. Issue trackers, changelogs, forums, and vendor blogs corroborate at most; they never own a claim.
 
+In T3 Code without `t3-integration`, say so and resume the unfinished step below; keep completed work.
+
 ## Pick a role
 
-- **Research lead** — any request not marked `Role: research worker`. Bounds the brief, dispatches one background research worker, verifies the finding, and owns every user-facing and tracker action. Dispatching the worker is this skill's split, not a re-delegation of your assignment. The lead performs the worker steps itself in place of its step 3 only when the host has no subagent dispatch tool or the dispatch call itself fails.
+- **Research lead** — any request not marked `Role: research worker`. Bounds the brief, dispatches one background research worker, verifies the finding, and owns every user-facing and tracker action. Dispatching the worker is this skill's split, not a re-delegation of your assignment. The lead performs the worker steps itself in place of its step 3 only when the host has no subagent dispatch tool or the dispatch call itself fails. In T3, this fallback requires confirmed unavailability or non-acceptance: reconcile any retained task/request ID after an uncertain dispatch before taking over, so two workers never own the finding.
 - **Research worker** — a dispatch marked `Role: research worker`. Investigates, writes the finding, and returns it to the lead.
 
 ## Research lead
@@ -28,7 +30,7 @@ A **finding** is one Markdown file that answers a bounded question with claim-le
 
    **Complete when:** one exact, writable path is fixed.
 
-3. **Dispatch the worker.** Send the brief, the path, `Role: research worker`, and the instruction to load the `research` skill. Dispatch with the host's background option where it has one (`run_in_background: true` on Claude Code).
+3. **Dispatch the worker.** Send the brief, the path, `Role: research worker`, and the instruction to load the `research` skill. In T3 Code, load `t3-integration` when installed for selected-model delegation and async collection; otherwise dispatch with the host's background option where it has one (`run_in_background: true` on Claude Code).
 
    **Complete when:** one background worker owns the investigation and has the complete brief.
 

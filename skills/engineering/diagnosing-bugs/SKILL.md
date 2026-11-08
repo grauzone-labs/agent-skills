@@ -1,17 +1,19 @@
 ---
 name: diagnosing-bugs
 description: Runs a diagnosis loop for hard bugs and performance regressions, building a tight feedback loop that goes red on the bug before any hypothesis. Use when the user says "diagnose" or "debug this", or reports something broken, throwing, failing, or slow.
-compatibility: Requires bash for the HITL script and git for bisection. HTTP, headless-browser, and test loops use whatever the project already provides.
+compatibility: Requires bash for the HITL script and git for bisection. HTTP, headless-browser, and test loops use whatever the project already provides. Optional T3 paths use t3-integration and the t3-code MCP server.
 license: MIT
 metadata:
   author: "Sascha Grau"
-  version: "1.1.0"
+  version: "1.2.0"
   category: "engineering"
 ---
 
 # Diagnosing bugs
 
 Skip a phase only when you state why. When exploring the codebase, use the project's domain vocabulary: read `docs/agents/domain.md` when it exists, then the relevant `CONTEXT.md` and the ADRs in the area you are touching.
+
+In T3 Code without `t3-integration`, say so and resume the unfinished step below; keep completed work.
 
 ## Progress
 
@@ -41,7 +43,7 @@ For performance regressions, measure the baseline timing before changing anythin
 1. **Failing test** at whatever seam reaches the bug: unit, integration, e2e.
 2. **Curl / HTTP script** against a running dev server.
 3. **CLI invocation** with a fixture input, diffing stdout against a known-good snapshot.
-4. **Headless browser script** (Playwright / Puppeteer) that drives the UI and asserts on DOM/console/network.
+4. **Browser loop.** In T3 Code, load `t3-integration` when installed for interactive reproduction and evidence through the collaborative browser. Keep the project's headless browser script (Playwright / Puppeteer) for repeatable assertions on DOM/console/network and as the existing browser fallback.
 5. **Replay a captured trace.** Save a real network request / payload / event log to disk; replay it through the code path in isolation.
 6. **Throwaway harness.** Spin up a minimal subset of the system (one service, mocked deps) that exercises the bug code path with a single function call.
 7. **Property / fuzz loop.** If the bug is "sometimes wrong output", run 1000 random inputs and look for the failure mode.
