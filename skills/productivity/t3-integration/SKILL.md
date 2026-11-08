@@ -5,7 +5,7 @@ compatibility: Uses the optional t3-code MCP server. ACP transport needs bash an
 license: MIT
 metadata:
   author: "Sascha Grau"
-  version: "1.0.3"
+  version: "1.1.0"
   category: "productivity"
 ---
 

@@ -4,7 +4,7 @@ The skill-specific branch of [`writing-for-agents`](../SKILL.md): what changes w
 
 ## Format baseline
 
-For every skill you create or edit, use the [Agent Skills specification](https://agentskills.io/specification) as the minimum format contract: a directory named for the skill with a `SKILL.md` containing YAML frontmatter and Markdown instructions. Apply collection and host-specific conventions only as additions to that baseline. `scripts/measure.sh` runs the reference validator, `skills-ref validate <skill-dir>` (through npx when it is not installed), which rejects fields outside the specification. `disable-model-invocation` is the one rejection this collection accepts deliberately, and a new host field earns its place only when a host reads it (see [Hosts](#hosts)).
+For every skill you create or edit, use the [Agent Skills specification](https://agentskills.io/specification) as the minimum format contract: a directory named for the skill with a `SKILL.md` containing YAML frontmatter and Markdown instructions. Apply collection and host-specific conventions only as additions to that baseline. `scripts/measure.sh` uses a trusted preinstalled `skills-ref validate <skill-dir>`, which rejects fields outside the specification. It downloads nothing; when the validator is absent, report format validation as not run rather than passed. `disable-model-invocation` is the one rejection this collection accepts deliberately, and a new host field earns its place only when a host reads it (see [Hosts](#hosts)).
 
 ## Frontmatter fields
 

@@ -9,7 +9,19 @@ set -u
 [ "$#" -eq 1 ] || { printf 'FAIL  usage: measure.sh <skill-dir>\n'; exit 1; }
 dir="$1"
 # Resolve to an absolute path so a relative "." still yields the directory name.
-dir=$(cd "$dir" 2>/dev/null && pwd) || { printf 'FAIL  no such directory: %s\n' "$1"; exit 1; }
+dir=$(cd "$dir" 2>/dev/null && pwd -P) || { printf 'FAIL  no such directory: %s\n' "$1"; exit 1; }
+# Keep relative/current-directory and target-owned PATH entries out of review tools.
+review_safe_path=""
+IFS=: read -r -a review_path_entries <<< "${PATH-}"
+for review_entry in "${review_path_entries[@]}"; do
+  [[ "$review_entry" = /* ]] || continue
+  review_physical=$(cd "$review_entry" 2>/dev/null && pwd -P) || continue
+  case "$review_physical" in "$dir"|"$dir"/*) continue ;; esac
+  review_safe_path="${review_safe_path:+$review_safe_path:}$review_physical"
+done
+[ -n "$review_safe_path" ] || { printf 'FAIL  no trusted absolute tool directories outside target\n'; exit 1; }
+PATH="$review_safe_path"
+export PATH
 skill="$dir/SKILL.md"
 status=0
 
@@ -75,15 +87,39 @@ done
 # --- Scripts
 while IFS= read -r script; do
   rel="${script#"$dir"/}"
-  if grep -Frq "$(basename "$script")" "$skill" "${refs[@]}" 2>/dev/null; then ok "$rel referenced"; else fail "$rel never referenced from SKILL.md or references"; fi
+  if grep -Frq -e "$(basename "$script")" -- "$skill" "${refs[@]}" 2>/dev/null; then ok "$rel referenced"; else fail "$rel never referenced from SKILL.md or references"; fi
 done < <(find "$dir/scripts" -type f 2>/dev/null | sort)
 
 # --- Validator (skills-ref). disable-model-invocation is the one rejection this collection accepts.
 validator=()
-if command -v skills-ref >/dev/null 2>&1; then
-  validator=(skills-ref)
-elif command -v npx >/dev/null 2>&1; then
-  validator=(npx -y skills-ref)
+# Resolve symlinks so a tool outside the target cannot point back into it.
+resolve_validator() {
+  local candidate="$1" candidate_dir candidate_name link depth
+  [[ "$candidate" = /* ]] || return 1
+  # 40 matches the conventional operating-system symlink traversal limit.
+  for ((depth=0; depth<40; depth++)); do
+    candidate_dir=${candidate%/*}
+    candidate_name=${candidate##*/}
+    candidate_dir=$(cd "${candidate_dir:-/}" 2>/dev/null && pwd -P) || return 1
+    candidate="$candidate_dir/$candidate_name"
+    case "$candidate" in "$dir"|"$dir"/*) return 1 ;; esac
+    if [ ! -L "$candidate" ]; then
+      [ -f "$candidate" ] && [ -x "$candidate" ] || return 1
+      printf '%s\n' "$candidate"
+      return 0
+    fi
+    link=$(readlink "$candidate") || return 1
+    case "$link" in /*) candidate="$link" ;; *) candidate="$candidate_dir/$link" ;; esac
+  done
+  return 1
+}
+validator_candidate=$(type -P skills-ref 2>/dev/null) || validator_candidate=""
+if [ -n "$validator_candidate" ]; then
+  if validator_path=$(resolve_validator "$validator_candidate"); then
+    validator=("$validator_path")
+  else
+    info "skills-ref resolves to an untrusted or unverifiable path: format validation not run"
+  fi
 fi
 if [ "${#validator[@]}" -gt 0 ]; then
   validator_status=0
@@ -96,7 +132,7 @@ if [ "${#validator[@]}" -gt 0 ]; then
     fail "skills-ref validate: $(printf '%s' "$out" | tr '\n' ' ')"
   fi
 else
-  info "neither skills-ref nor npx found: run skills-ref validate manually"
+  info "trusted skills-ref unavailable: format validation not run; use a separately trusted installation"
 fi
 
 exit $status
