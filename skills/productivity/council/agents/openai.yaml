@@ -1,0 +1,6 @@
+interface:
+  display_name: "Council"
+  short_description: "Review by three flagship models from three providers"
+
+policy:
+  allow_implicit_invocation: false

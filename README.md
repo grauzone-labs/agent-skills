@@ -5,7 +5,7 @@ Reusable [Agent Skills](https://agentskills.io/) for software engineering and pr
 | Directory | Skills |
 |---|---|
 | [`skills/engineering/`](skills/engineering/) | Planning, research, software design, implementation, testing, and code review. |
-| [`skills/productivity/`](skills/productivity/) | Decision-making, agent instructions, writing, model routing, and GitHub comments. |
+| [`skills/productivity/`](skills/productivity/) | Decision-making, agent instructions, writing, model routing, council reviews, and GitHub comments. |
 
 ## Install
 
@@ -62,6 +62,7 @@ Some skills call other skills of this collection, so a selective install should 
 
 | Skill | Also install | Why |
 |---|---|---|
+| [`council`](skills/productivity/council/SKILL.md) | [`model-routing`](skills/productivity/model-routing/SKILL.md), [`leaving-pr-comments`](skills/productivity/leaving-pr-comments/SKILL.md) | `model-routing` chooses the models for the work around the council reviews; `leaving-pr-comments` writes the replies to GitHub pull request comments. |
 | [`triage`](skills/engineering/triage/SKILL.md), [`wayfinder`](skills/engineering/wayfinder/SKILL.md), [`implement-work-item`](skills/engineering/implement-work-item/SKILL.md), and the tracker contract that [`setup-software-engineering-skills`](skills/engineering/setup-software-engineering-skills/SKILL.md) generates | [`leaving-pr-comments`](skills/productivity/leaving-pr-comments/SKILL.md) | Comments these workflows leave on GitHub go through it. Only the GitHub tracker needs it, and it needs `gh` or the host's GitHub tool. Other trackers do not, and issue and pull request bodies carry no attribution note. |
 
 ## Update or remove skills
@@ -81,12 +82,12 @@ Each skill is a directory containing a `SKILL.md` file and, when needed, support
 
 ## Credits
 
-[`leaving-pr-comments`](skills/productivity/leaving-pr-comments/SKILL.md) is adapted from [Theo Browne's tstack](https://github.com/t3dotgg/tstack/tree/main/skills/leaving-pr-comments) under the MIT license; the reworked version here may differ. See [`CREDITS.md`](skills/productivity/leaving-pr-comments/CREDITS.md) for the license notice.
+[`council`](skills/productivity/council/SKILL.md) and [`leaving-pr-comments`](skills/productivity/leaving-pr-comments/SKILL.md) are adapted from [Theo Browne's tstack](https://github.com/t3dotgg/tstack) under the MIT license. The originals are [`skills/council`](https://github.com/t3dotgg/tstack/tree/main/skills/council) and [`skills/leaving-pr-comments`](https://github.com/t3dotgg/tstack/tree/main/skills/leaving-pr-comments); the reworked versions here may differ. See the [`council`](skills/productivity/council/CREDITS.md) and [`leaving-pr-comments`](skills/productivity/leaving-pr-comments/CREDITS.md) credits for the license notice.
 
 ## References
 
 - [Skill catalog](SKILLS.md)
-- [tstack](https://github.com/t3dotgg/tstack/tree/main/skills/leaving-pr-comments), the source of `leaving-pr-comments`
+- [tstack](https://github.com/t3dotgg/tstack), the source of `council` and `leaving-pr-comments`
 - [Agent Skills specification](https://agentskills.io/specification)
 - [Skills CLI](https://github.com/vercel-labs/skills)
 - [Supported agents](https://github.com/vercel-labs/skills#supported-agents)
