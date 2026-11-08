@@ -1,12 +1,12 @@
 ---
 name: wayfinder
 description: Plans an initiative too large for one agent session as a shared map of decision tickets on the issue tracker, and resolves them one session at a time until the way to the destination is clear. Use when the user asks to chart a map for a loose idea, or names an existing Wayfinder map or one of its tickets to work.
-compatibility: Requires the tracker contract in docs/agents/issue-tracker.md written by setup-software-engineering-skills, that tracker's CLI or file tools, and the grilling, domain-modeling, research, and prototype skills of this collection. Research tickets need a host with a subagent dispatch tool.
+compatibility: Requires the tracker contract in docs/agents/issue-tracker.md written by setup-software-engineering-skills, that tracker's CLI or file tools, and the grilling, domain-modeling, research, and prototype skills of this collection, plus the leaving-pr-comments skill on GitHub. Research tickets need a host with a subagent dispatch tool.
 license: MIT
 disable-model-invocation: true
 metadata:
   author: "Sascha Grau"
-  version: "1.1.0"
+  version: "1.2.0"
   category: "engineering"
 ---
 
@@ -160,7 +160,7 @@ User invokes with a map (URL, number, or path) and optionally a ticket; without 
 1. **Load the map** - the map body only; the frontier query reads ticket metadata, and ticket bodies are fetched on demand in step 3.
 2. **Choose the ticket.** If the user named one, use it; if it is not a child of this map, or is closed, claimed, or blocked, report that state and stop. Otherwise take the first frontier ticket in the tracker's order; if the frontier is empty, report whether open tickets remain (blocked or claimed) or the map is complete, and stop. **Claim it** per [Tickets](#tickets) before any work.
 3. **Resolve it** per its [type](#ticket-types), invoking the skills the map's **Notes** name. **Zoom as needed**: fetch the full body of any related or closed ticket on demand. Proceed when the type's completion criterion holds; otherwise report the gap and stop with the ticket open.
-4. **Record the resolution**: post the answer as a **resolution comment**, **close** the ticket, and **append its index line** to Decisions so far.
+4. **Record the resolution**: post the answer as a **resolution comment**, **close** the ticket, and **append its index line** to Decisions so far. On GitHub, use `leaving-pr-comments` for every comment in this workflow, including out-of-scope and invalidation explanations; its note sits above the resolution content. Close a ticket only after the skill returned its required comment's verified URL.
 5. **Update the map**: create newly surfaced tickets (create, then wire); graduate fog the answer has made specifiable, removing each graduated patch from **Not yet specified** so it lives only as its ticket; rule out of scope any ticket the answer shows sits past the destination; update the tickets the decision invalidates, or close them with the reason and re-wire their dependents.
 6. **Continue or stop.** After a `research` ticket, return to step 2; after any other ticket, report and stop.
 

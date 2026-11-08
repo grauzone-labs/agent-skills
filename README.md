@@ -5,7 +5,7 @@ Reusable [Agent Skills](https://agentskills.io/) for software engineering and pr
 | Directory | Skills |
 |---|---|
 | [`skills/engineering/`](skills/engineering/) | Planning, research, software design, implementation, testing, and code review. |
-| [`skills/productivity/`](skills/productivity/) | Decision-making, agent instructions, writing, and model routing. |
+| [`skills/productivity/`](skills/productivity/) | Decision-making, agent instructions, writing, model routing, and GitHub comments. |
 
 ## Install
 
@@ -56,6 +56,14 @@ npx skills@latest add grauzone-labs/agent-skills --skill research --agent openco
 
 Replace `research` with a skill name from the [catalog](SKILLS.md) and `opencode` with your agent's identifier. Add `--global` for a user-level installation.
 
+### Skill dependencies
+
+Some skills call other skills of this collection, so a selective install should include them:
+
+| Skill | Also install | Why |
+|---|---|---|
+| [`triage`](skills/engineering/triage/SKILL.md), [`wayfinder`](skills/engineering/wayfinder/SKILL.md), [`implement-work-item`](skills/engineering/implement-work-item/SKILL.md), and the tracker contract that [`setup-software-engineering-skills`](skills/engineering/setup-software-engineering-skills/SKILL.md) generates | [`leaving-pr-comments`](skills/productivity/leaving-pr-comments/SKILL.md) | Comments these workflows leave on GitHub go through it. Only the GitHub tracker needs it, and it needs `gh` or the host's GitHub tool. Other trackers do not, and issue and pull request bodies carry no attribution note. |
+
 ## Update or remove skills
 
 Run these commands from the project where you installed the skills:
@@ -71,9 +79,14 @@ The CLI guides you through choosing which installed skills to update or remove. 
 
 Each skill is a directory containing a `SKILL.md` file and, when needed, supporting files. Review a skill before installing it. Skills provide instructions to an AI agent and may reference tools or actions in your environment.
 
+## Credits
+
+[`leaving-pr-comments`](skills/productivity/leaving-pr-comments/SKILL.md) is adapted from [Theo Browne's tstack](https://github.com/t3dotgg/tstack/tree/main/skills/leaving-pr-comments) under the MIT license; the reworked version here may differ. See [`CREDITS.md`](skills/productivity/leaving-pr-comments/CREDITS.md) for the license notice.
+
 ## References
 
 - [Skill catalog](SKILLS.md)
+- [tstack](https://github.com/t3dotgg/tstack/tree/main/skills/leaving-pr-comments), the source of `leaving-pr-comments`
 - [Agent Skills specification](https://agentskills.io/specification)
 - [Skills CLI](https://github.com/vercel-labs/skills)
 - [Supported agents](https://github.com/vercel-labs/skills#supported-agents)

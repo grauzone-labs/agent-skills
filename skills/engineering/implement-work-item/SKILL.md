@@ -1,12 +1,12 @@
 ---
 name: implement-work-item
 description: Implements one tracker work item end to end, from its dependency gate through its merged pull request, on GitHub, Azure DevOps, or another tracker and pull request system. Use when the user names a work item ID to implement; `implement` owns a spec or ticket built on the current branch.
-compatibility: Requires git, a project test runner for testable work, a host that can run sub-agents, network access to the tracker and pull request system, and the tdd, two-axis-review, pr, and model-routing skills of this collection. Uses gh on GitHub and az with the azure-devops extension on Azure DevOps.
+compatibility: Requires git, a project test runner for testable work, a host that can run sub-agents, network access to the tracker and pull request system, and the tdd, two-axis-review, pr, and model-routing skills of this collection, plus the leaving-pr-comments skill on GitHub. Uses gh on GitHub and az with the azure-devops extension on Azure DevOps.
 license: MIT
 disable-model-invocation: true
 metadata:
   author: "Sascha Grau"
-  version: "1.1.0"
+  version: "1.2.0"
   category: "engineering"
 ---
 
@@ -155,7 +155,7 @@ On the go, fetch the target branch. If it moved, resync. This gate is passed whe
 
 Use the `pr` skill to open one pull request to the target branch, carrying the closing link for the work item. Follow the status rules in the tracker contract.
 
-Stay on the pull request until every required check is green and every reviewer that repository rules require, automated or human, has reviewed the head commit without open findings. Fix every valid finding or reply with the reason for leaving it, push the update, and wait for the review of the new head.
+Stay on the pull request until every required check is green and every reviewer that repository rules require, automated or human, has reviewed the head commit without open findings. Fix every valid finding or reply with the reason for leaving it, push the update, and wait for the review of the new head. On GitHub, post each reply with the `leaving-pr-comments` skill. If resolving a review thread, do so only after the skill verified the reply.
 
 Leave the open pull request as it is while the target branch advances, also when the pull request system reports a conflict with it. Step 12 syncs it once, at merge time.
 

@@ -1,0 +1,6 @@
+interface:
+  display_name: "Leaving PR comments"
+  short_description: "Attribute agent comments on GitHub and verify the post"
+
+policy:
+  allow_implicit_invocation: true

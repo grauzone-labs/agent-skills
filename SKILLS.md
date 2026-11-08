@@ -1,6 +1,6 @@
 # Skill catalog
 
-Browse by the work you want to do. Each link opens the skill's `SKILL.md`, which contains its instructions. See [README.md](README.md#install) for installation commands for your agent.
+Browse by the work you want to do. Each link opens the skill's `SKILL.md`, which contains its instructions. See [README.md](README.md#install) for installation commands for your agent and [Skill dependencies](README.md#skill-dependencies) for skills that need others installed with them.
 
 ## Model routing
 
@@ -37,6 +37,7 @@ Browse by the work you want to do. Each link opens the skill's `SKILL.md`, which
 | [`implement`](skills/engineering/implement/SKILL.md) | You want to implement an approved software change. |
 | [`implement-work-item`](skills/engineering/implement-work-item/SKILL.md) | You want one tracker work item taken from its dependency gate to a merged pull request, with your go before the pull request opens and before it merges. |
 | [`pr`](skills/engineering/pr/SKILL.md) | You want a pull request body that reviewers can check quickly. |
+| [`leaving-pr-comments`](skills/productivity/leaving-pr-comments/SKILL.md) | An agent posts, replies to, or resolves a comment on GitHub for you and the comment needs a verified attribution note, a secret check, and a verified post. Adapted from [tstack](skills/productivity/leaving-pr-comments/CREDITS.md). |
 | [`tdd`](skills/engineering/tdd/SKILL.md) | You want to guide software development with a test-first workflow. |
 
 ## Agent instructions and writing

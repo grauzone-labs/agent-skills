@@ -6,7 +6,7 @@ license: MIT
 disable-model-invocation: true
 metadata:
   author: "Sascha Grau"
-  version: "1.3.0"
+  version: "1.4.0"
   category: "engineering"
 ---
 
